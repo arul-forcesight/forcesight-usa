@@ -20,6 +20,7 @@ import { PaymentTableView } from "./components/PaymentTableView";
 import { SummaryView } from "./components/SummaryView";
 import { BankTransfers } from "./components/BankTransfers";
 import { SubMenuTabs } from "./components/SubMenuTabs";
+import { InventoryModule } from "./components/inventory/InventoryModule";
 import { DateRangeFilter } from "./components/DateRangeFilter";
 import { Button } from "./components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "./components/ui/sheet";
@@ -575,17 +576,7 @@ function MoneyContent({ activeTab, setActiveTab }: { activeTab: string; setActiv
 }
 
 function InventoryContent() {
-  return (
-    <div className="space-y-6">
-      <Card className="p-12 border border-gray-200 text-center">
-        <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-        <h3 className="mb-2">Inventory Management</h3>
-        <p className="text-muted-foreground max-w-md mx-auto">
-          Inventory planning and management features will be available soon. Track stock levels, forecast demand, and optimize working capital.
-        </p>
-      </Card>
-    </div>
-  );
+  return <InventoryModule />;
 }
 
 function DownloadsContent() {
