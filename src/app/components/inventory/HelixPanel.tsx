@@ -86,12 +86,13 @@ export function HelixPanel({
             <p className="text-sm text-[#0a335c] mb-1">AI Assistant</p>
             {mode === "simple" ? (
               <div className="bg-[#eef4ff] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-sm text-[#0a335c] max-w-[85%]">
-                Hello! I'm your ForceSight AI assistant. How can I help you with demand forecasting today?
+                Hi! I'm your ForceSight assistant. I propose and explain — the engine computes every figure. How can I
+                help with your sell-in / sell-out forecast?
               </div>
             ) : (
               <p className="text-sm text-[#0a335c]">
-                <span className="font-semibold">Black Friday Push:</span> Based on last Black Friday and current ad
-                plan, this setup protects <span className="font-semibold">$12M revenue</span> with{" "}
+                <span className="font-semibold">Budget cycle:</span> Based on the prior WENR cycle and current
+                trade / co-op plan, the engine protects <span className="font-semibold">$12M revenue</span> with{" "}
                 <span className="font-semibold">$4.2M cash locked</span>.
               </p>
             )}
@@ -142,7 +143,7 @@ export function HelixPanel({
                       <div className="grid grid-cols-4 gap-2 text-xs">
                         <Metric label="Inventory $" value={s.inventory} />
                         <Metric label="Cash Impact" value={s.cashImpact} />
-                        <Metric label="DIO Change" value={s.dioChange} />
+                        <Metric label="WOC Change" value={s.wocChange} />
                         <Metric label="Revenue Protected" value={s.revenueProtected} />
                       </div>
                       <p className="text-[11px] text-gray-500 mt-2">{s.summary}</p>

@@ -83,7 +83,7 @@ export default function App() {
       case "payments":
         return <PaymentsContent activeTab={currentSubView} setActiveTab={setCurrentSubView} setGlobalFilters={setGlobalFilters} />;
       case "inventory":
-        return <InventoryContent />;
+        return <InventoryContent aiOpen={showAIChat} onCloseAI={() => setShowAIChat(false)} />;
       case "money":
         return <MoneyContent activeTab={currentSubView} setActiveTab={setCurrentSubView} />;
       case "downloads":
@@ -315,8 +315,10 @@ export default function App() {
               {renderContent()}
             </div>
 
-            {/* AI Chat Panel - Desktop Fixed Position */}
-            {showAIChat && (
+            {/* AI Chat Panel - Desktop Fixed Position.
+                Inventory renders its own Figma "Helix AI" panel (toggled by the
+                same header button), so the generic panel is suppressed there. */}
+            {showAIChat && currentView !== "inventory" && (
               <div className="hidden lg:block fixed right-6 top-[88px] bottom-6 w-[400px] z-50">
                 <AIChatPanel onClose={() => setShowAIChat(false)} />
               </div>
@@ -575,8 +577,8 @@ function MoneyContent({ activeTab, setActiveTab }: { activeTab: string; setActiv
   );
 }
 
-function InventoryContent() {
-  return <InventoryModule />;
+function InventoryContent({ aiOpen, onCloseAI }: { aiOpen: boolean; onCloseAI: () => void }) {
+  return <InventoryModule aiOpen={aiOpen} onCloseAI={onCloseAI} />;
 }
 
 function DownloadsContent() {

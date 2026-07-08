@@ -3,17 +3,24 @@ import { ArrowUp } from "lucide-react";
 import { CampaignsList } from "./CampaignsList";
 import { CreateCampaign } from "./CreateCampaign";
 import { ForecastDetail } from "./ForecastDetail";
+import { HelixPanel } from "./HelixPanel";
 import { Campaign } from "./data";
 
 type View = "list" | "create" | "detail";
 
 /**
- * Inventory · Demand Forecasting module.
- * Self-contained: renders inside the app's existing content area (the app's
- * sidebar + header stay as-is). Manages the list → create → detail flow and
- * the persistent "Ask AI" bar from the Figma design.
+ * Inventory · Sell-in / Sell-out Forecast (WENR) module.
+ * Renders inside the app's existing content area (sidebar + header stay as-is).
+ * ONE Helix AI panel, toggled by the header "Ask Helix AI" button (aiOpen).
+ * The panel mode follows the active screen: list/create → chat, detail → strategies.
  */
-export function InventoryModule() {
+export function InventoryModule({
+  aiOpen,
+  onCloseAI,
+}: {
+  aiOpen: boolean;
+  onCloseAI: () => void;
+}) {
   const [view, setView] = useState<View>("list");
   const [active, setActive] = useState<Campaign | null>(null);
 
@@ -42,6 +49,17 @@ export function InventoryModule() {
 
       {view === "detail" && (
         <ForecastDetail campaign={active} onBack={() => setView("list")} />
+      )}
+
+      {/* Single Helix AI panel — toggled by the header button */}
+      {aiOpen && (
+        <div className="hidden lg:block fixed right-6 top-[88px] bottom-6 w-[400px] z-50">
+          <HelixPanel
+            mode={view === "detail" ? "strategies" : "simple"}
+            onClose={onCloseAI}
+            className="h-full w-full"
+          />
+        </div>
       )}
 
       {/* Persistent Ask AI bar */}

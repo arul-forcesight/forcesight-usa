@@ -2,7 +2,6 @@ import { Plus, Eye, Pencil } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { ChannelIcon } from "../ChannelBadge";
-import { HelixPanel } from "./HelixPanel";
 import { Campaign, CampaignStatus, CAMPAIGNS } from "./data";
 
 const statusStyles: Record<CampaignStatus, string> = {
@@ -35,19 +34,19 @@ export function CampaignsList({
   onOpen: (c: Campaign) => void;
 }) {
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-start">
+    <div className="w-full">
       {/* Main card */}
-      <div className="flex-1 min-w-0 w-full bg-white border border-[#e6e8ea] rounded-2xl">
+      <div className="min-w-0 w-full bg-white border border-[#e6e8ea] rounded-2xl">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-6">
           <div>
-            <h2 className="text-[#0a335c]">Demand Forecasting Campaigns</h2>
+            <h2 className="text-[#0a335c]">Sell-in / Sell-out Forecast (WENR)</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Create and manage your demand forecasting scenarios
+              Create and manage your WENR forecast cycles
             </p>
           </div>
           <Button onClick={onCreate} className="gap-2 bg-[#007fff] hover:bg-[#0069d6] shrink-0">
             <Plus className="w-4 h-4" />
-            Create New Campaign
+            New Forecast Cycle
           </Button>
         </div>
 
@@ -55,7 +54,7 @@ export function CampaignsList({
           <table className="w-full min-w-[760px]">
             <thead>
               <tr className="border-y border-[#eef1f4] text-left">
-                {["Campaign Name", "Created Date", "Forecast Period", "Status", "Target Channels", "Actions"].map(
+                {["Forecast Cycle", "Created Date", "Forecast Period", "Status", "Retailers", "Actions"].map(
                   (h) => (
                     <th
                       key={h}
@@ -103,9 +102,6 @@ export function CampaignsList({
           </table>
         </div>
       </div>
-
-      {/* Helix AI side panel */}
-      <HelixPanel mode="simple" className="hidden xl:flex w-[340px] shrink-0 h-[560px]" />
     </div>
   );
 }

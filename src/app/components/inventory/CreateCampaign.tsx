@@ -19,8 +19,11 @@ import {
   SelectValue,
 } from "../ui/select";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { HelixPanel } from "./HelixPanel";
-import { FORECAST_PERIODS } from "./data";
+import {
+  FORECAST_PERIODS,
+  RETAILERS,
+  DISTRIBUTION_CENTERS,
+} from "./data";
 
 /**
  * Inventory · Demand Forecasting — "Create New Campaign" wizard (Setup step).
@@ -36,14 +39,16 @@ export function CreateCampaign({
   onBack: () => void;
   onNext: () => void;
 }) {
-  const [campaignName, setCampaignName] = useState("Campaign 1");
-  const [forecastPeriod, setForecastPeriod] = useState("90 days");
+  const [campaignName, setCampaignName] = useState("Reforecast 4");
+  const [forecastPeriod, setForecastPeriod] = useState("13 weeks");
   const [target, setTarget] = useState("direct");
+  const [retailer, setRetailer] = useState("All retailers");
+  const [distributionCenter, setDistributionCenter] = useState("All DCs");
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-start">
+    <div className="w-full">
       {/* Main wizard card */}
-      <div className="flex-1 min-w-0 w-full bg-white border border-[#e6e8ea] rounded-2xl overflow-hidden">
+      <div className="w-full bg-white border border-[#e6e8ea] rounded-2xl overflow-hidden">
         {/* Wizard step tabs */}
         <div className="flex items-center gap-2 flex-wrap p-4 border-b border-[#eef1f4]">
           <div className="flex items-center gap-2 rounded-lg px-3 py-2 bg-[#e0f0ff] text-[#007fff]">
@@ -69,12 +74,12 @@ export function CreateCampaign({
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#007fff]" />
               <h3 className="font-semibold text-[#0a335c]">
-                Step 1: Enter Campaign Name
+                Step 1: Name this forecast cycle
               </h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              On creating the restock plan you can choose this forecast by
-              selecting this name
+              You can pick this cycle name later on the replenishment plan to
+              apply this forecast.
             </p>
             <Input
               value={campaignName}
@@ -149,17 +154,58 @@ export function CreateCampaign({
               <label className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="b2b" id="target-b2b" />
                 <span className="text-sm text-[#0a335c]">
-                  Select from B2B PO
+                  Select from replenishment orders
                 </span>
               </label>
             </RadioGroup>
+
+            {/* Retailer + distribution center scope */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:max-w-[860px]">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[#0a335c]">
+                  Retailer
+                </label>
+                <Select value={retailer} onValueChange={setRetailer}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select retailer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RETAILERS.map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {r}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-[#0a335c]">
+                  Distribution center
+                </label>
+                <Select
+                  value={distributionCenter}
+                  onValueChange={setDistributionCenter}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select distribution center" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DISTRIBUTION_CENTERS.map((dc) => (
+                      <SelectItem key={dc} value={dc}>
+                        {dc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium text-[#007fff]">
                 Total Selection
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f4f6] px-3 py-1.5 text-sm font-medium text-[#0a335c]">
-                Based On Black Friday Push 2025: 1828 Items Selected
+                Based On Budget FY25: 1,828 Items Selected
                 <Pencil className="w-3.5 h-3.5 text-[#007fff]" />
               </span>
             </div>
@@ -189,12 +235,6 @@ export function CreateCampaign({
           </div>
         </div>
       </div>
-
-      {/* Helix AI side panel */}
-      <HelixPanel
-        mode="simple"
-        className="hidden xl:flex w-[340px] shrink-0 h-[560px]"
-      />
     </div>
   );
 }

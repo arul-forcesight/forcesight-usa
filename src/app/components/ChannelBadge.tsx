@@ -26,6 +26,8 @@ export type ChannelKey =
   | "tiktok"
   | "etsy"
   | "google"
+  | "kroger"
+  | "costco"
   | "website";
 
 interface ChannelDef {
@@ -123,6 +125,8 @@ const CHANNELS: Record<ChannelKey, ChannelDef> = {
   },
   etsy: { name: "Etsy", bg: "#F1641E", letter: "E" },
   google: { name: "Google", bg: "#4285F4", letter: "G" },
+  kroger: { name: "Kroger", bg: "#0D4EA6", letter: "K" },
+  costco: { name: "Costco", bg: "#E31837", letter: "C" },
   website: {
     name: "Website",
     bg: "#64748B",
@@ -155,6 +159,8 @@ export function normalizeChannel(raw?: string | null): ChannelKey {
   if (s.includes("tiktok") || s.includes("tik tok")) return "tiktok";
   if (s.includes("etsy")) return "etsy";
   if (s.includes("google")) return "google";
+  if (s.includes("kroger")) return "kroger";
+  if (s.includes("costco")) return "costco";
   if (s.includes("website") || s.includes("d2c") || s.includes("direct")) return "website";
   return "website";
 }

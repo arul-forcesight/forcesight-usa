@@ -12,13 +12,13 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
-import { HelixPanel } from "./HelixPanel";
 import {
   Campaign,
   RiskLevel,
   FORECAST_KPIS,
   FORECAST_ROWS,
   FORECAST_TOTAL,
+  CONSTRAINTS,
 } from "./data";
 
 const riskStyles: Record<RiskLevel, string> = {
@@ -43,9 +43,7 @@ export function ForecastDetail({
   );
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-start">
-      {/* Left column */}
-      <div className="flex-1 min-w-0 w-full space-y-4">
+    <div className="w-full space-y-4">
         {/* Back link */}
         <Button
           variant="ghost"
@@ -60,7 +58,7 @@ export function ForecastDetail({
         {/* Header row */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Input
-            defaultValue={campaign?.name ?? "Black Friday Push Campaign"}
+            defaultValue={campaign?.name ?? "Budget FY26"}
             className="w-full sm:w-[360px] h-11 font-semibold text-[#0a335c] focus-visible:ring-[#007fff]/40 focus-visible:border-[#007fff]"
           />
           <Button className="bg-[#007fff] hover:bg-[#0069d6] shrink-0">
@@ -79,7 +77,7 @@ export function ForecastDetail({
             }`}
           >
             <Checkbox checked={strategy === "push"} className="pointer-events-none" />
-            Black Friday Push
+            Budget
           </button>
           <button
             onClick={() => setStrategy("balanced")}
@@ -99,20 +97,12 @@ export function ForecastDetail({
 
         {/* Constraints bar */}
         <div className="bg-[#f7f8fb] border border-[#e6e8ea] rounded-xl px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <span className="text-sm text-gray-500">
-            Inv Master SKUs:{" "}
-            <span className="font-semibold text-[#0a335c]">1,248 Items</span>
-          </span>
-          <span className="text-sm text-gray-500">
-            Forecast Period:{" "}
-            <span className="font-semibold text-[#0a335c]">Next 90 Days</span>
-          </span>
-          <span className="text-sm text-gray-500">
-            Look back:{" "}
-            <span className="font-semibold text-[#0a335c]">
-              Last 90 Days Of Last Year
+          {CONSTRAINTS.map((c) => (
+            <span key={c.label} className="text-sm text-gray-500">
+              {c.label}:{" "}
+              <span className="font-semibold text-[#0a335c]">{c.value}</span>
             </span>
-          </span>
+          ))}
           <Button variant="outline" size="sm" className="ml-auto gap-1.5">
             <Pencil className="w-3.5 h-3.5" />
             Edit Constraints
@@ -142,12 +132,12 @@ export function ForecastDetail({
             <span className="font-semibold">Helix AI Insight:</span>{" "}
             {insightOpen ? (
               <span className="text-gray-600">
-                Based on last Black Friday and current ad plan, this setup protects
+                Based on the prior WENR cycle and current trade / co-op plan, the engine protects
                 $12M revenue with $4.2M cash locked while holding stockout risk at 8%.
               </span>
             ) : (
               <span className="text-gray-600">
-                Based on last Black Friday and current ad plan, this setup protec…
+                Based on the prior WENR cycle and current trade / co-op plan, the engine protec…
               </span>
             )}
           </p>
@@ -175,7 +165,7 @@ export function ForecastDetail({
         <div className="bg-white border border-[#e6e8ea] rounded-2xl p-4 sm:p-5">
           <p className="text-[#0a335c] mb-4">
             <span className="font-semibold">Forecast Table:</span>{" "}
-            <span className="text-gray-500">AI generated</span>
+            <span className="text-gray-500">Engine generated</span>
           </p>
 
           {/* Toolbar */}
@@ -212,10 +202,11 @@ export function ForecastDetail({
               <thead>
                 <tr className="border-y border-[#eef1f4] text-left">
                   {[
-                    "Inventory Master SKU",
-                    "Jan 2026",
+                    "Item / UPC",
+                    "Wk 1–13",
                     "Total Qty",
                     "Total Value",
+                    "Weeks of cover",
                     "Risk Level",
                     "Ai Insights",
                   ].map((h) => (
@@ -238,13 +229,16 @@ export function ForecastDetail({
                       <span className="font-semibold text-[#0a335c]">{r.sku}</span>
                     </td>
                     <td className="px-4 py-4 text-sm text-right text-[#0a335c] whitespace-nowrap">
-                      {r.monthQty.toLocaleString()}
+                      {r.periodQty.toLocaleString()}
                     </td>
                     <td className="px-4 py-4 text-sm text-[#007fff] font-medium whitespace-nowrap">
                       {r.totalQty.toLocaleString()}
                     </td>
                     <td className="px-4 py-4 text-sm text-[#0a335c] whitespace-nowrap">
                       {r.totalValue}
+                    </td>
+                    <td className="px-4 py-4 text-sm text-[#0a335c] whitespace-nowrap">
+                      {r.woc}
                     </td>
                     <td className="px-4 py-4">
                       <Badge className={riskStyles[r.risk]}>{r.risk}</Badge>
@@ -261,13 +255,16 @@ export function ForecastDetail({
                     <span className="font-semibold text-[#0a335c]">Total</span>
                   </td>
                   <td className="px-4 py-4 text-sm text-right font-semibold text-[#0a335c] whitespace-nowrap">
-                    {FORECAST_TOTAL.monthQty.toLocaleString()}
+                    {FORECAST_TOTAL.periodQty.toLocaleString()}
                   </td>
                   <td className="px-4 py-4 text-sm font-semibold text-[#007fff] whitespace-nowrap">
                     {FORECAST_TOTAL.totalQty.toLocaleString()}
                   </td>
                   <td className="px-4 py-4 text-sm font-semibold text-[#0a335c] whitespace-nowrap">
                     {FORECAST_TOTAL.totalValue}
+                  </td>
+                  <td className="px-4 py-4 text-sm font-semibold text-[#0a335c] whitespace-nowrap">
+                    {FORECAST_TOTAL.woc}
                   </td>
                   <td className="px-4 py-4" />
                   <td className="px-4 py-4 text-sm text-gray-600 whitespace-nowrap">
@@ -278,13 +275,6 @@ export function ForecastDetail({
             </table>
           </div>
         </div>
-      </div>
-
-      {/* Helix AI side panel */}
-      <HelixPanel
-        mode="strategies"
-        className="hidden xl:flex w-[380px] shrink-0 h-[720px]"
-      />
     </div>
   );
 }
