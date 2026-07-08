@@ -42,6 +42,7 @@ import {
   RETAILERS,
   DISTRIBUTION_CENTERS,
 } from "./data";
+import { SelectTargetItems } from "./SelectTargetItems";
 
 type Tab = "setup" | "reference" | "adjustments";
 
@@ -87,15 +88,21 @@ export function CreateCampaign({
   const [retailer, setRetailer] = useState("All retailers");
   const [distributionCenter, setDistributionCenter] = useState("All DCs");
 
+  // Select Target Items modal (Setup step)
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [selectedCount, setSelectedCount] = useState(1828);
+
   // Reference Data state
   const [changeReference, setChangeReference] = useState(false);
   const [lookBack, setLookBack] = useState(LOOK_BACK_OPTIONS[0]);
+  // Select Target Items modal (Reference Data step)
+  const [refPickerOpen, setRefPickerOpen] = useState(false);
+  const [refCount, setRefCount] = useState(1828);
 
   // Weighted Average Modeling modal
   const [wamOpen, setWamOpen] = useState(false);
-  const [weights, setWeights] = useState<number[]>([
-    13, 12, 13, 12, 13, 12, 13, 12,
-  ]);
+  // Five weekly look-back periods (W1–W5), seeded evenly to sum to 100%.
+  const [weights, setWeights] = useState<number[]>([20, 20, 20, 20, 20]);
   const totalWeight = weights.reduce((sum, w) => sum + (w || 0), 0);
   const maxWeight = Math.max(...weights, 1);
   const isBalanced = totalWeight === 100;
@@ -334,10 +341,15 @@ export function CreateCampaign({
                 <span className="text-sm font-medium text-[#007fff]">
                   Total Selection
                 </span>
-                <span className="inline-flex items-center gap-2 rounded-full bg-[#f2f4f6] px-3 py-1.5 text-sm font-medium text-[#0a335c]">
-                  Based On Budget FY25: 1,828 Items Selected
+                <button
+                  type="button"
+                  onClick={() => setPickerOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#f2f4f6] px-3 py-1.5 text-sm font-medium text-[#0a335c] hover:bg-[#e6e8ea] transition-colors"
+                >
+                  Based On Budget FY25: {selectedCount.toLocaleString()} Items
+                  Selected
                   <Pencil className="w-3.5 h-3.5 text-[#007fff]" />
-                </span>
+                </button>
               </div>
             </div>
           </div>
@@ -370,6 +382,21 @@ export function CreateCampaign({
                   onCheckedChange={setChangeReference}
                 />
               </div>
+              {changeReference && (
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <span className="text-sm font-medium text-[#007fff]">
+                    Total Selection For The Reference
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRefPickerOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#f2f4f6] px-3 py-1.5 text-sm font-medium text-[#0a335c] hover:bg-[#e6e8ea] transition-colors"
+                  >
+                    {refCount.toLocaleString()} Items Selected
+                    <Pencil className="w-3.5 h-3.5 text-[#007fff]" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Step 5 — Look-back period */}
@@ -670,7 +697,7 @@ export function CreateCampaign({
           <DialogHeader>
             <DialogTitle>Weighted Average Modeling</DialogTitle>
             <p className="text-sm text-muted-foreground">
-              Look-back period: 26 weeks
+              Look Back Period: 30 days · 5 weeks
             </p>
           </DialogHeader>
 
@@ -702,7 +729,7 @@ export function CreateCampaign({
           {/* Instruction box */}
           <div className="rounded-lg border border-[#e6e8ea] bg-[#f8fafc] px-4 py-3">
             <p className="text-sm text-[#0a335c]">
-              Adjust the weight percentage for each period. The total must equal
+              Adjust the weight percentage for each week. The total must equal
               100%.
             </p>
           </div>
@@ -720,7 +747,7 @@ export function CreateCampaign({
                     key={i}
                     className="flex-1 px-2 py-2 text-center text-sm font-medium text-[#0a335c]"
                   >
-                    {i + 1}
+                    W{i + 1}
                   </div>
                 ))}
               </div>
@@ -729,15 +756,22 @@ export function CreateCampaign({
               <div className="flex border-b border-[#eef1f4]">
                 <div className="w-24 shrink-0 px-3 py-3 text-xs font-medium text-muted-foreground">
                   Weight (%)
+                  <span className="block text-[10px]">(last Year)</span>
                 </div>
                 {weights.map((w, i) => (
-                  <div key={i} className="flex-1 px-2 py-3 text-center">
+                  <div
+                    key={i}
+                    className="flex flex-1 flex-col items-center px-2 py-3 text-center"
+                  >
                     <Input
                       type="number"
                       value={String(w)}
                       onChange={(e) => setWeightAt(i, e.target.value)}
                       className="mx-auto h-9 w-16 text-center"
                     />
+                    <span className="mt-1 text-[11px] text-muted-foreground">
+                      (32%)
+                    </span>
                   </div>
                 ))}
               </div>
@@ -811,6 +845,22 @@ export function CreateCampaign({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Select Target Items — Setup step (direct vs replenishment orders) */}
+      <SelectTargetItems
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        mode={target === "direct" ? "direct" : "po"}
+        onSave={(count) => setSelectedCount(count)}
+      />
+
+      {/* Select Target Items — Reference Data step (always direct) */}
+      <SelectTargetItems
+        open={refPickerOpen}
+        onOpenChange={setRefPickerOpen}
+        mode="direct"
+        onSave={(count) => setRefCount(count)}
+      />
     </div>
   );
 }

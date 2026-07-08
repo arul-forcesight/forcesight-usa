@@ -109,6 +109,49 @@ export const CONSTRAINTS = [
   { label: "Lead time (per DC)", value: "5–9 days" },
 ];
 
+/** Select Target Items — filter labels (US retail lens). */
+export const DEFAULT_FILTERS = [
+  "Retailer",
+  "SKUs",
+  "Product ID",
+  "ParentId",
+  "Category / segment",
+  "Item / UPC",
+];
+
+export interface ItemRow {
+  sku: string;
+  onHand: number; // On-hand (cases)
+  ordered: number; // Ordered Qty (PO variant)
+  pending: number; // Pending Qty (PO variant)
+}
+
+export const ITEM_ROWS: ItemRow[] = [
+  { sku: "SKU213980", onHand: 1000, ordered: 1000, pending: 1000 },
+  { sku: "Smart Watch Series 5", onHand: 2000, ordered: 2000, pending: 2000 },
+  { sku: "Bluetooth Speaker X10", onHand: 3000, ordered: 3000, pending: 3000 },
+  { sku: "USB-C Cable Premium", onHand: 2000, ordered: 2000, pending: 2000 },
+  { sku: "Wireless Earbuds Pro", onHand: 3000, ordered: 3000, pending: 3000 },
+  { sku: "4K Action Camera", onHand: 1200, ordered: 1200, pending: 900 },
+  { sku: "Fitness Tracker Band", onHand: 2600, ordered: 2600, pending: 1800 },
+];
+
+export interface PoRow {
+  id: string;
+  retailer: string; // was "Manufacturer" in the India design
+  date: string;
+  value: string; // $ (was PO Value ₹)
+  otif: string; // OTIF % (was Fill Rate)
+}
+
+export const PO_LIST: PoRow[] = [
+  { id: "PO 10001", retailer: "Walmart", date: "Feb 1, 2026", value: "$565K", otif: "60%" },
+  { id: "PO 10002", retailer: "Walmart", date: "Jan 20, 2026", value: "$355K", otif: "60%" },
+  { id: "PO 10003", retailer: "Kroger", date: "Jan 25, 2026", value: "$732K", otif: "40%" },
+  { id: "PO 10004", retailer: "Costco", date: "Jan 20, 2026", value: "$355K", otif: "60%" },
+  { id: "PO 10005", retailer: "Target", date: "Jan 18, 2026", value: "$410K", otif: "72%" },
+];
+
 export interface Strategy {
   key: string;
   name: string;
