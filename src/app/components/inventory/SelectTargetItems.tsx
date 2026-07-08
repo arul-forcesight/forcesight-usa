@@ -149,9 +149,9 @@ export function SelectTargetItems({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1200px] w-[96vw] max-h-[90vh] overflow-y-auto p-0 gap-0 [&>button]:hidden">
+      <DialogContent className="w-[96vw] max-w-[1120px] sm:max-w-[1120px] max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden [&>button]:hidden">
         {/* Header */}
-        <div className="flex flex-col gap-3 border-b border-[#eef1f4] p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[#eef1f4] p-6 sm:flex-row sm:items-center sm:justify-between shrink-0">
           <h2 className="text-xl font-semibold text-[#0a335c]">
             Select Target Items
           </h2>
@@ -175,7 +175,7 @@ export function SelectTargetItems({
           </div>
         </div>
 
-        <div className="space-y-6 p-6">
+        <div className="space-y-6 p-6 flex-1 overflow-y-auto">
           {/* PO selector (po mode only) */}
           {mode === "po" && (
             <div className="flex flex-wrap items-center gap-4">
@@ -194,9 +194,9 @@ export function SelectTargetItems({
           )}
 
           {/* Body: filters (left) + selected items (right) */}
-          <div className="grid gap-6 lg:grid-cols-[1fr,1.1fr]">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
             {/* LEFT — filters card */}
-            <div className="rounded-xl border border-[#e6e8ea] bg-white p-5">
+            <div className="min-w-0 rounded-xl border border-[#e6e8ea] bg-white p-5">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-[#0a335c]">Default Filters</h3>
                 <button
@@ -276,7 +276,7 @@ export function SelectTargetItems({
             </div>
 
             {/* RIGHT — selected items */}
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               {/* Grouping + Helix AI */}
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Select value={grouping} onValueChange={setGrouping}>
