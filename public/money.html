@@ -460,7 +460,7 @@
   .topbar{ display:none !important; }
   /* channel icon chips (used in dashboard Channel column) */
   .chcell{ display:inline-flex; align-items:center; gap:7px; }
-  .chic{ display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:4px; font-size:9px; font-weight:800; line-height:1; flex-shrink:0; font-family:'Outfit',sans-serif; }
+  .chic{ display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:4px; line-height:1; flex-shrink:0; overflow:hidden; }
 </style>
 </head>
 <body>
@@ -600,10 +600,10 @@ function toggleMoney(e){ e.preventDefault();
     bronze:{label:"You confirm it &middot; we can't track it",badge:"bronze",icon:"&#9678;",tag:"you confirm"}
   };
   var ops={
-    PN:{name:"Priya Nair",role:"Finance",av:"PN",col:"#1E7A51"},
-    AR:{name:"Arjun Rao",role:"Performance Mktg",av:"AR",col:"#5B4D9E"},
-    MI:{name:"Meera Iyer",role:"Inventory",av:"MI",col:"#996712"},
-    RC:{name:"Raja C.",role:"Commercial",av:"RC",col:"#0F6378"},
+    PN:{name:"Paula Nolan",role:"Finance",av:"PN",col:"#1E7A51"},
+    AR:{name:"Aaron Reyes",role:"Performance Mktg",av:"AR",col:"#5B4D9E"},
+    MI:{name:"Megan Ingram",role:"Inventory",av:"MI",col:"#996712"},
+    RC:{name:"Ryan Carter",role:"Commercial",av:"RC",col:"#0F6378"},
     UN:{name:"Unassigned",role:"—",av:"—",col:"#9AA0A5"}
   };
 
@@ -627,12 +627,21 @@ function toggleMoney(e){ e.preventDefault();
     if(x.indexOf("etsy")>-1) return "etsy";
     if(x.indexOf("google")>-1) return "google";
     return "website"; }
-  var CH={amazon:["#232F3E","a","#FF9900"],walmart:["#0071DC","✦","#FFC220"],shopify:["#5E8E3E","S","#fff"],
-    ebay:["#fff","e","#E53238"],target:["#fff","◎","#CC0000"],facebook:["#1877F2","f","#fff"],
-    instagram:["#DD2A7B","◉","#fff"],tiktok:["#000000","♪","#fff"],etsy:["#F1641E","E","#fff"],
-    google:["#fff","G","#4285F4"],website:["#64748B","●","#fff"]};
-  function chIcon(name){ var c=CH[chNorm(name)]; var ring=(c[0]==="#fff")?";box-shadow:inset 0 0 0 1px rgba(15,23,42,.12)":"";
-    return '<span class="chic" style="background:'+c[0]+';color:'+c[2]+ring+'">'+c[1]+'</span>'; }
+  var CHbg={amazon:"#232F3E",walmart:"#0071DC",shopify:"#5E8E3E",ebay:"#E53238",target:"#CC0000",
+    instagram:"linear-gradient(45deg,#F58529,#DD2A7B,#8134AF,#515BD4)",facebook:"#1877F2",tiktok:"#000000",
+    etsy:"#F1641E",google:"#4285F4",website:"#64748B"};
+  var CHletter={shopify:"S",ebay:"e",facebook:"f",etsy:"E",google:"G"};
+  var CHmark={
+    amazon:'<svg viewBox="0 0 24 24" width="72%" height="72%" fill="none"><path d="M4.5 15.5c4.3 3 10.7 3 15 0" stroke="#FF9900" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14.7l2.4-.4-.5 2.4" stroke="#FF9900" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    walmart:'<svg viewBox="0 0 24 24" width="62%" height="62%"><g stroke="#FFC220" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="8.4"/><line x1="12" y1="15.6" x2="12" y2="21"/><line x1="4.2" y1="7.5" x2="8.9" y2="10.2"/><line x1="15.1" y1="13.8" x2="19.8" y2="16.5"/><line x1="4.2" y1="16.5" x2="8.9" y2="13.8"/><line x1="15.1" y1="10.2" x2="19.8" y2="7.5"/></g></svg>',
+    target:'<svg viewBox="0 0 24 24" width="72%" height="72%" fill="none"><circle cx="12" cy="12" r="7.2" stroke="#fff" stroke-width="2.4"/><circle cx="12" cy="12" r="2.6" fill="#fff"/></svg>',
+    instagram:'<svg viewBox="0 0 24 24" width="64%" height="64%" fill="none"><rect x="4.3" y="4.3" width="15.4" height="15.4" rx="4.6" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.7" stroke="#fff" stroke-width="2"/><circle cx="16.6" cy="7.4" r="1.15" fill="#fff"/></svg>',
+    tiktok:'<svg viewBox="0 0 24 24" width="58%" height="58%"><path d="M14.2 3.5c.35 2.3 1.9 3.75 4.1 3.95v2.55c-1.3 0-2.6-.4-3.7-1.1v5c0 2.85-2.2 4.9-4.85 4.9a4.85 4.85 0 0 1-.6-9.65v2.65a2.2 2.2 0 1 0 1.65 2.13V3.5z" fill="#fff"/></svg>',
+    website:'<svg viewBox="0 0 24 24" width="72%" height="72%" fill="none"><g stroke="#fff" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><path d="M4.5 12h15M12 4.5c2.1 2.3 2.1 12.7 0 15M12 4.5c-2.1 2.3-2.1 12.7 0 15"/></g></svg>'
+  };
+  function chIcon(name){ var k=chNorm(name); var bg=CHbg[k]||CHbg.website;
+    var inner=CHmark[k]||('<span style="color:#fff;font-weight:800;font-size:9px;line-height:1;font-family:\'Outfit\',sans-serif">'+(CHletter[k]||"?")+'</span>');
+    return '<span class="chic" style="background:'+bg+'">'+inner+'</span>'; }
   function animateNum(el,from,to,dur){ if(!el)return; var s=null;
     function step(ts){ if(!s)s=ts; var t=Math.min((ts-s)/dur,1),e=1-Math.pow(1-t,3); el.textContent=fmtL(from+(to-from)*e); if(t<1)requestAnimationFrame(step); else el.textContent=fmtL(to);}
     try{requestAnimationFrame(step);}catch(e){el.textContent=fmtL(to);} }
@@ -648,14 +657,14 @@ function toggleMoney(e){ e.preventDefault();
        {id:"ads",t:"Stop the ads",speed:"fast",tier:"gold",owner:"AR",impact:1800000,d:"Stop spending on Walmart ads for these products now.",impact_txt:"Stops about <b>$1.8M a month</b> of losses within 24 hours. You can undo it.",action:"Stop Walmart ad spend on 8 loss-making products",verS:"Walmart ad spend on all 8 products <b>stopped</b>; <b>$1.8M a month of losses stopped</b>, checked against your ad spend data."},
        {id:"delist",t:"Remove from Walmart",speed:"hard to undo",tier:"gold",owner:"MI",impact:5780000,d:"Take these products off Walmart.",impact_txt:"Removes the full <b>$5.78M a month</b> loss, but you give up Walmart sales.",action:"Remove 8 loss-making products from Walmart",verS:"8 products <b>removed</b>; <b>$5.78M a month loss gone</b>, checked against your profit data."},
        {id:"price",t:"Raise the price",speed:"needs check",tier:"gold",owner:"PN",impact:4000000,d:"Raise prices so these products stop losing money.",impact_txt:"Brings back profit on the sales you keep. First check the higher price won't scare off buyers.",action:"Raise prices on 8 products to stop the loss",verS:"Raised prices on 8 products; <b>6 of 8 now make a profit</b>, checked against your profit data."},
-       {id:"nego",t:"Renegotiate the deal",speed:"structural",tier:"bronze",owner:"RC",impact:5780000,d:"Push Walmart to lower their fees.",impact_txt:"Biggest long-term win &mdash; it fixes the real cause. Slow, and you need bargaining power.",action:"Start a fee review with Walmart",verS:"<b>Raja is handling this directly with Walmart</b> &mdash; it happens outside our system, so he confirms it. We'll watch <b>Walmart profit for 60 days</b> and the data will confirm it if the fees drop."}
+       {id:"nego",t:"Renegotiate the deal",speed:"structural",tier:"bronze",owner:"RC",impact:5780000,d:"Push Walmart to lower their fees.",impact_txt:"Biggest long-term win &mdash; it fixes the real cause. Slow, and you need bargaining power.",action:"Start a fee review with Walmart",verS:"<b>Ryan is handling this directly with Walmart</b> &mdash; it happens outside our system, so he confirms it. We'll watch <b>Walmart profit for 60 days</b> and the data will confirm it if the fees drop."}
      ]},
     {id:"adbudget",rank:2,module:"ads",state:"losing",stateLabel:"Losing",owner:"AR",
      title:"Ad money wasted on the wrong products",sub:"42 products spend on ads but get no sales · best ads are capped",
      amt:"$430K",amtNum:430000,period:"/mo profit",metric:"≈ $5.16M/yr at risk",conf:"high",status:"open",chosen:null,cAt:"30 Jun · 7:30 AM",cts:30,
      proofHead:"Ad spend — waste vs missed profit",
      proof:[["42 products with ad spend but no sales","-$28K/mo"],["Girl's Vest — great returns, budget capped","+$270K/mo"],["3 good performers short on budget","+$160K/mo"]],
-     dash:{cols:["Campaign","Channel","Spend","ROAS","Action"],rows:[["Baby Clothing Set | KT","Amazon","$28K","0.0x","Pause 42 SKUs"],["Girl's Vest | KT","Amazon","$55.4K","6.7x","Scale +$40K"],["Ariel Boys Trunk | KT","Amazon","$236K","5.1x","Fund +$85K"],["RB Women's Pyjamas | KT","Amazon","$158K","5.0x","Hold"]]},
+     dash:{cols:["Campaign","Channel","Spend","ROAS","Action"],rows:[["Baby Clothing Set | KT","Amazon","$28K","0.0x","Pause 42 SKUs"],["Girl's Vest | KT","Amazon","$55.4K","6.7x","Scale +$40K"],["Ariel Boys Trunk | KT","Amazon","$236K","5.1x","Fund +$85K"],["RB Women's Pajamas | KT","Amazon","$158K","5.0x","Hold"]]},
      levers:[
        {id:"pause",t:"Stop the wasted ads",speed:"1-click",tier:"gold",owner:"AR",impact:336000,d:"Stop ads on 42 products that got no sales in 30 days.",impact_txt:"Saves <b>$28K a month</b> and you lose no sales.",action:"Stop ads on 42 products with no sales",verS:"42 products stopped; <b>$28K a month saved</b>, sales unchanged &mdash; checked against your ad spend data."},
        {id:"reallocate",t:"Let AI rebalance the budget",speed:"best for profit",tier:"gold",owner:"AR",impact:4300000,d:"Move ad money from what's not working to what is.",impact_txt:"Adds <b>$430K a month in profit</b>: stop the waste and back the winners. Overall returns stay strong at 4.9x.",action:"Move ad budget to the products that sell best",verS:"New plan applied; <b>$430K a month more profit</b> confirmed, overall returns 4.9x &mdash; checked against your sales data."},
@@ -665,11 +674,11 @@ function toggleMoney(e){ e.preventDefault();
      title:"Cash stuck in slow-selling stock",sub:"$4.2M tied up · sitting 48 days · restock needs approval",
      amt:"$4.2M",amtNum:4200000,period:"tied up",metric:"sitting 48 days · cash tied up",conf:"high",status:"open",chosen:null,cAt:"24 Jun · 7:30 AM",cts:24,
      proofHead:"Slow-selling stock + restock decision",
-     proof:[["Slow sellers — over 90 days of stock left","$2.6M tied up"],["Not sold in 60 days","$800K tied up"],["Restock plan (Diwali)","spend $3.8M"]],
+     proof:[["Slow sellers — over 90 days of stock left","$2.6M tied up"],["Not sold in 60 days","$800K tied up"],["Restock plan (Black Friday)","spend $3.8M"]],
      stats:[["Cash tied up","$4.2M"],["Days sitting","48 d"],["Chance of running out","8%"],["Sales it covers","$12M"]],
      dash:{cols:["SKU","Warehouse","In hand","DOI","Locked value"],rows:[["Slow-mover A","South DC","12,400","112 d","$1.4M"],["Slow-mover B","South DC","8,900","98 d","$1.2M"],["Dead stock C","South DC","2,900","180+ d","$800K"],["Excess D","West DC","6,100","96 d","$800K"]]},
      levers:[
-       {id:"approve",t:"Approve the restock",speed:"spends cash",tier:"silver",owner:"MI",impact:600000,d:"Spend $3.8M to have enough stock for Diwali.",impact_txt:"Spends <b>$3.8M</b> to protect <b>$12M</b> in sales. This is within your safe spending range.",action:"Approve Diwali restock; spend $3.8M",verS:"<b>Order PO-2026-014 placed, $3.8M approved.</b> On track to cover $12M in sales; chance of running out drops 8% &rarr; 3% (protecting about $600K profit)."},
+       {id:"approve",t:"Approve the restock",speed:"spends cash",tier:"silver",owner:"MI",impact:600000,d:"Spend $3.8M to have enough stock for Black Friday.",impact_txt:"Spends <b>$3.8M</b> to protect <b>$12M</b> in sales. This is within your safe spending range.",action:"Approve Black Friday restock; spend $3.8M",verS:"<b>Order PO-2026-014 placed, $3.8M approved.</b> On track to cover $12M in sales; chance of running out drops 8% &rarr; 3% (protecting about $600K profit)."},
        {id:"liquidate",t:"Sell off the slow stock",speed:"lowers profit",tier:"gold",owner:"MI",impact:3400000,d:"Clear slow and unsold stock to get cash back.",impact_txt:"Gets back <b>$3.4M</b> of the $4.2M tied up, but at a lower profit.",action:"Run a clearance sale on slow and unsold South warehouse stock",verS:"Clearance running; <b>$3.4M freed up</b>, checked against your stock data. Days sitting dropped 48 &rarr; 31."},
        {id:"hold",t:"Do nothing, keep the cash",speed:"can undo",tier:"bronze",owner:"MI",impact:0,d:"Order less and keep the cash for now.",impact_txt:"Keeps cash free but raises the chance of running out. You can undo it.",action:"Order less stock; keep an eye on running out",verS:"<b>Confirmed by you</b> &mdash; a judgment call we can't track. We'll check <b>the chance of running out every week</b> and flag it if it gets too high."}
      ]}
@@ -692,7 +701,7 @@ function toggleMoney(e){ e.preventDefault();
     {id:"deadstock",module:"inventory",owner:"MI",title:"Cleared stock that wasn't selling",amt:"$750K",action:"Run a clearance sale on stock unsold for 90+ days",tier:"gold",stage:"verified",impact:750000,cAt:"8 Jun · 7:30 AM",cts:8,aAt:"11 Jun · 10:00 AM",rAt:"19 Jun · 5:30 PM",when:"Closed this quarter",outcome:"Ran a clearance sale on stock that hadn't sold in over 90 days. $750K in cash freed up, checked against your stock data.",proof:[["Cash freed","$750K"],["Units cleared","3,200"]]},
     {id:"transfer",module:"inventory",owner:"MI",title:"Moved stock to where it sells",amt:"$260K",action:"Transfer stock from West to South warehouse",tier:"silver",stage:"evidence",impact:260000,cAt:"24 Jun · 9:00 AM",cts:24,aAt:"27 Jun · 11:40 AM",rAt:"29 Jun · 4:10 PM",when:"Done 6 days ago",outcome:"Moved stock from a warehouse where it sat to one where it sells. Freight receipt attached as proof.",proof:[["Units moved","1,900"],["Stockouts avoided","$260K"]]},
     {id:"restock_hero",module:"inventory",owner:"MI",title:"Restocked products about to run out",amt:"$390K",action:"Fast-track restock on 7 best-selling products",tier:"gold",stage:"verified",impact:390000,cAt:"9 Jun · 7:30 AM",cts:9,aAt:"11 Jun · 9:15 AM",rAt:"18 Jun · 2:00 PM",when:"Closed this quarter",outcome:"Restocked 7 best-sellers before they ran out. Sales protected, checked against your sales data.",proof:[["Products restocked","7"],["Sales protected a month","$390K"]]},
-    {id:"fee_nego",module:"profit",owner:"RC",title:"Renegotiated marketplace fees",amt:"$900K",action:"Agree a lower category fee with a marketplace",tier:"bronze",stage:"watching",impact:900000,cAt:"20 Jun · 10:30 AM",cts:20,aAt:"23 Jun · 3:00 PM",rAt:"Watching · confirms by ~22 Aug",when:"Watching for 60 days",outcome:"Raja agreed a lower fee directly with the marketplace. It happens outside our system, so we're watching your profit for 60 days to confirm it.",proof:[["Fee before","18%"],["New fee","15%"],["Expected saving a month","$900K"]]}
+    {id:"fee_nego",module:"profit",owner:"RC",title:"Renegotiated marketplace fees",amt:"$900K",action:"Agree a lower category fee with a marketplace",tier:"bronze",stage:"watching",impact:900000,cAt:"20 Jun · 10:30 AM",cts:20,aAt:"23 Jun · 3:00 PM",rAt:"Watching · confirms by ~22 Aug",when:"Watching for 60 days",outcome:"Ryan agreed a lower fee directly with the marketplace. It happens outside our system, so we're watching your profit for 60 days to confirm it.",proof:[["Fee before","18%"],["New fee","15%"],["Expected saving a month","$900K"]]}
   ];
 
   var current="brief", drillId=null, chosenLever=null, evidenceAttached=false;
@@ -705,7 +714,7 @@ function toggleMoney(e){ e.preventDefault();
     setTimeout(function(){ fn(); c.classList.remove("swapping"); c.scrollTop=0; },190); }
 
   window.go=function(v){
-    if(v==="brief"){ current="brief"; setNav("brief"); setHeader("The Brief","Good morning, Anush · your money, today"); swap(renderBrief); }
+    if(v==="brief"){ current="brief"; setNav("brief"); setHeader("The Brief","Good morning, Jordan · your money, today"); swap(renderBrief); }
     else if(v==="tracking"){ current="tracking"; setNav("tracking"); setHeader("Tracking","Who owns what · and where each decision is in verification"); swap(renderTracking); }
     else if(v==="team"){ current="team"; setNav("team"); setHeader("Team performance","How your team is performing · tap anyone to drill in"); swap(renderTeam); }
     else if(v==="dashboard"){ current="dashboard"; setNav("dashboard"); setHeader("Analyst Dashboard","The deep view — raw lines, traceable to source"); swap(function(){renderDashboard(null);}); }
@@ -802,7 +811,7 @@ function toggleMoney(e){ e.preventDefault();
     clearPulse();
   };
   function renderBrief(){
-    setGuide(1,"You're <b>Anush, CFO</b>. Three impact numbers up top. <b>Tap a decision</b> — watch them move. Open in Dashboard to dig deeper.");
+    setGuide(1,"You're <b>Jordan, CFO</b>. Three impact numbers up top. <b>Tap a decision</b> — watch them move. Open in Dashboard to dig deeper.");
     var openP=probs.filter(function(p){return p.status==="open";});
     var resolvedP=probs.filter(function(p){return p.status==="verified"||p.status==="watching";});
     var dismissedP=probs.filter(function(p){return p.status==="dismissed";});
@@ -964,8 +973,8 @@ function toggleMoney(e){ e.preventDefault();
     ],
     aged:[
       {q:"Why is $4.2M stuck?",a:"These products have more stock than they're selling (48 days' worth sitting), so your cash is tied up in stock that isn't moving — $2.6M in slow sellers, $800K in stock not selling at all. That's cash you can't use for anything else."},
-      {q:"Should I approve the restock?",a:"The $3.8M Diwali restock protects about $12M in sales and is within your safe spending range. It closes once the order is on file, and your data confirms it once the sales come in."},
-      {q:"Restock or sell off the slow stock first?",a:"You can do both. Selling off slow and unsold stock gets $3.4M back (at a lower profit) and cuts the days-sitting from 48 to 31; the restock keeps you covered for Diwali. Many finance teams do both: clear the dead stock and approve a right-sized restock."}
+      {q:"Should I approve the restock?",a:"The $3.8M Black Friday restock protects about $12M in sales and is within your safe spending range. It closes once the order is on file, and your data confirms it once the sales come in."},
+      {q:"Restock or sell off the slow stock first?",a:"You can do both. Selling off slow and unsold stock gets $3.4M back (at a lower profit) and cuts the days-sitting from 48 to 31; the restock keeps you covered for Black Friday. Many finance teams do both: clear the dead stock and approve a right-sized restock."}
     ]
   };
   var helixGeneric="Here's how I see it: we work out every rupee figure and spot the problem — I just help you compare your options. Weigh <b>how fast and how easy to undo</b> against <b>the total gain</b>: options your data can confirm close on their own, while ones you confirm yourself sit under Watching until you mark them done. Want me to compare two options for you?";
