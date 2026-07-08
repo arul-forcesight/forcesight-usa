@@ -12,6 +12,21 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import {
   Campaign,
   RiskLevel,
@@ -37,6 +52,15 @@ export function ForecastDetail({
   const [strategy, setStrategy] = useState<"push" | "balanced">("push");
   const [insightOpen, setInsightOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [constraintsOpen, setConstraintsOpen] = useState(false);
+
+  // Edit Constraints form state (mock)
+  const [forecastPeriod, setForecastPeriod] = useState("26");
+  const [lookBack, setLookBack] = useState("Prior WENR cycle actuals");
+  const [casePack, setCasePack] = useState("12 / case");
+  const [pallet, setPallet] = useState("48 cases");
+  const [leadTime, setLeadTime] = useState("5–9 days");
+  const items = "1,248";
 
   const rows = FORECAST_ROWS.filter((r) =>
     r.sku.toLowerCase().includes(search.trim().toLowerCase()),
@@ -103,7 +127,12 @@ export function ForecastDetail({
               <span className="font-semibold text-[#0a335c]">{c.value}</span>
             </span>
           ))}
-          <Button variant="outline" size="sm" className="ml-auto gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto gap-1.5"
+            onClick={() => setConstraintsOpen(true)}
+          >
             <Pencil className="w-3.5 h-3.5" />
             Edit Constraints
           </Button>
@@ -275,6 +304,107 @@ export function ForecastDetail({
             </table>
           </div>
         </div>
+
+        {/* Edit Constraints modal */}
+        <Dialog open={constraintsOpen} onOpenChange={setConstraintsOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit Constraints</DialogTitle>
+            </DialogHeader>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* Items (UPCs) */}
+              <div className="space-y-1.5">
+                <Label htmlFor="constraint-items">Items (UPCs)</Label>
+                <Input
+                  id="constraint-items"
+                  value={items}
+                  readOnly
+                  className="bg-[#f7f8fb] text-gray-500"
+                />
+              </div>
+
+              {/* Forecast period */}
+              <div className="space-y-1.5">
+                <Label htmlFor="constraint-period">Forecast period</Label>
+                <Select value={forecastPeriod} onValueChange={setForecastPeriod}>
+                  <SelectTrigger id="constraint-period">
+                    <SelectValue placeholder="Select period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="13">Next 13 weeks</SelectItem>
+                    <SelectItem value="26">Next 26 weeks</SelectItem>
+                    <SelectItem value="52">Next 52 weeks</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Look-back */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="constraint-lookback">Look-back</Label>
+                <Select value={lookBack} onValueChange={setLookBack}>
+                  <SelectTrigger id="constraint-lookback">
+                    <SelectValue placeholder="Select look-back" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Prior WENR cycle actuals">
+                      Prior WENR cycle actuals
+                    </SelectItem>
+                    <SelectItem value="Last 26 weeks of last year">
+                      Last 26 weeks of last year
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Case pack */}
+              <div className="space-y-1.5">
+                <Label htmlFor="constraint-casepack">Case pack</Label>
+                <Input
+                  id="constraint-casepack"
+                  value={casePack}
+                  onChange={(e) => setCasePack(e.target.value)}
+                />
+              </div>
+
+              {/* Pallet */}
+              <div className="space-y-1.5">
+                <Label htmlFor="constraint-pallet">Pallet</Label>
+                <Input
+                  id="constraint-pallet"
+                  value={pallet}
+                  onChange={(e) => setPallet(e.target.value)}
+                />
+              </div>
+
+              {/* Lead time (per DC) */}
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="constraint-leadtime">Lead time (per DC)</Label>
+                <Input
+                  id="constraint-leadtime"
+                  value={leadTime}
+                  onChange={(e) => setLeadTime(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                className="text-gray-600"
+                onClick={() => setConstraintsOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-[#007fff] hover:bg-[#0069d6]"
+                onClick={() => setConstraintsOpen(false)}
+              >
+                Save constraints
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   );
 }
