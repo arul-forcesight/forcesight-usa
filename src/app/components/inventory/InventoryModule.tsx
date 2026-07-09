@@ -77,8 +77,12 @@ export function InventoryModule({
         </div>
       )}
 
-      {/* Persistent Ask AI bar */}
-      <div className="sticky bottom-4 z-30 mt-6 flex justify-center px-4 pointer-events-none">
+      {/* Persistent Ask AI bar — pinned to the bottom of the viewport (inventory only) */}
+      <div
+        className={`fixed bottom-6 left-0 right-0 z-40 flex justify-center px-4 pointer-events-none ${
+          aiOpen ? "lg:pr-[440px]" : ""
+        }`}
+      >
         <div className="pointer-events-auto flex items-center gap-3 w-full max-w-[620px] bg-gradient-to-r from-[#1f8bff] to-[#0069d6] text-white rounded-full pl-5 pr-2 py-2 shadow-lg shadow-blue-500/25">
           <input
             className="flex-1 bg-transparent placeholder-white/80 text-sm text-white outline-none"
