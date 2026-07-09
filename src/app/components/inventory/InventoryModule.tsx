@@ -8,16 +8,20 @@ import { InventoryTour, TourStep } from "./InventoryTour";
 import { Campaign } from "./data";
 
 type View = "list" | "create" | "detail";
+type CreateTab = "setup" | "reference" | "adjustments";
 
-/** Guided-tour steps — one simple line each, walking the whole flow. */
-const TOUR: (TourStep & { view: View })[] = [
+/** Guided-tour steps — one simple line each, walking the whole flow end to end. */
+const TOUR: (TourStep & { view: View; tab?: CreateTab })[] = [
   { view: "list", target: "new-cycle", title: "Start here", body: "Create a new forecast cycle." },
-  { view: "list", target: "cycles-table", title: "Your cycles", body: "Every forecast cycle lives in this table." },
-  { view: "create", target: "wizard-tabs", title: "Three steps", body: "Setup, then reference data, then adjustments." },
-  { view: "create", target: "target", title: "Pick items", body: "Choose the items to forecast — filter to narrow down." },
+  { view: "create", tab: "setup", target: "name", title: "Name it", body: "Give this forecast cycle a name." },
+  { view: "create", tab: "setup", target: "period", title: "Horizon", body: "Pick the forecast period, in weeks." },
+  { view: "create", tab: "setup", target: "target", title: "Pick items", body: "Choose the items to forecast — filter to narrow down." },
+  { view: "create", tab: "reference", target: "reference", title: "Reference data", body: "Set the baseline and look-back period." },
+  { view: "create", tab: "reference", target: "weighted-average", title: "Weighting", body: "Weight each period — the total must be 100%." },
+  { view: "create", tab: "adjustments", target: "adjustments", title: "Adjustments", body: "Add trade, event and price tweaks." },
+  { view: "create", tab: "adjustments", target: "generate", title: "Generate", body: "Generate the forecast." },
   { view: "detail", target: "forecast-table", title: "The forecast", body: "Review what the engine generated." },
-  { view: "detail", target: "approve", title: "Approve", body: "Approve the plan when it looks right." },
-  { view: "list", target: "ask-ai", title: "Ask AI", body: "Ask about any scenario, anytime." },
+  { view: "detail", target: "approve", title: "Approve", body: "Approve the plan to create it." },
 ];
 
 /**
@@ -40,6 +44,7 @@ export function InventoryModule({
 }) {
   const [view, setView] = useState<View>("list");
   const [active, setActive] = useState<Campaign | null>(null);
+  const [createTab, setCreateTab] = useState<CreateTab>("setup");
   const [tourStep, setTourStep] = useState<number | null>(null);
 
   // Auto-start the guided tour when entering the Plan Inventory section.
@@ -47,9 +52,12 @@ export function InventoryModule({
     setTourStep(0);
   }, []);
 
-  // While the tour runs, drive the page to each step's view.
+  // While the tour runs, drive the page (and the create-wizard tab) to each step.
   useEffect(() => {
-    if (tourStep !== null) setView(TOUR[tourStep].view);
+    if (tourStep === null) return;
+    const step = TOUR[tourStep];
+    setView(step.view);
+    if (step.tab) setCreateTab(step.tab);
   }, [tourStep]);
 
   useEffect(() => {
@@ -62,6 +70,7 @@ export function InventoryModule({
 
   const navigate = (v: View, c?: Campaign | null) => {
     if (c !== undefined) setActive(c);
+    if (v === "create") setCreateTab("setup");
     window.history.pushState({ inv: v }, "");
     setView(v);
   };
@@ -79,6 +88,8 @@ export function InventoryModule({
 
         {view === "create" && (
           <CreateCampaign
+            tab={createTab}
+            onTabChange={setCreateTab}
             onCancel={() => navigate("list")}
             onBack={() => navigate("list")}
             onNext={() => navigate("detail")}

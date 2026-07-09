@@ -74,12 +74,22 @@ export function CreateCampaign({
   onCancel,
   onBack,
   onNext,
+  tab: tabProp,
+  onTabChange,
 }: {
   onCancel: () => void;
   onBack: () => void;
   onNext: () => void;
+  /** Optional controlled tab (used by the guided tour to drive the wizard). */
+  tab?: Tab;
+  onTabChange?: (tab: Tab) => void;
 }) {
-  const [tab, setTab] = useState<Tab>("setup");
+  const [tabState, setTabState] = useState<Tab>("setup");
+  const tab = tabProp ?? tabState;
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    onTabChange?.(t);
+  };
 
   // Setup state
   const [campaignName, setCampaignName] = useState("Reforecast 4");
@@ -205,7 +215,7 @@ export function CreateCampaign({
         {tab === "setup" && (
           <div className="space-y-8 p-6">
             {/* Step 1 — Campaign name */}
-            <div className="space-y-2">
+            <div data-tour="name" className="space-y-2">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#007fff]" />
                 <h3 className="font-semibold text-[#0a335c]">
@@ -224,7 +234,7 @@ export function CreateCampaign({
             </div>
 
             {/* Step 2 — Forecast period */}
-            <div className="space-y-2">
+            <div data-tour="period" className="space-y-2">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#007fff]" />
                 <h3 className="font-semibold text-[#0a335c]">
@@ -357,7 +367,7 @@ export function CreateCampaign({
 
         {/* REFERENCE DATA tab */}
         {tab === "reference" && (
-          <div className="space-y-8 p-6 min-h-[360px]">
+          <div data-tour="reference" className="space-y-8 p-6 min-h-[360px]">
             {/* Step 4 — Reference source */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -426,6 +436,7 @@ export function CreateCampaign({
                 </Select>
                 <button
                   type="button"
+                  data-tour="weighted-average"
                   onClick={() => setWamOpen(true)}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-[#007fff] bg-[#e0f0ff] px-3 py-2 text-sm font-medium text-[#007fff] hover:bg-[#d0e8ff] transition-colors shrink-0"
                 >
@@ -439,7 +450,7 @@ export function CreateCampaign({
 
         {/* ADJUSTMENTS tab */}
         {tab === "adjustments" && (
-          <div className="space-y-6 p-6 min-h-[360px]">
+          <div data-tour="adjustments" className="space-y-6 p-6 min-h-[360px]">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-[#007fff]" />
@@ -681,6 +692,7 @@ export function CreateCampaign({
               </>
             )}
             <Button
+              data-tour="generate"
               onClick={handleNext}
               className="bg-[#007fff] hover:bg-[#0069d6] text-white gap-2"
             >
