@@ -42,6 +42,11 @@ export function InventoryModule({
   const [active, setActive] = useState<Campaign | null>(null);
   const [tourStep, setTourStep] = useState<number | null>(null);
 
+  // Auto-start the guided tour when entering the Plan Inventory section.
+  useEffect(() => {
+    setTourStep(0);
+  }, []);
+
   // While the tour runs, drive the page to each step's view.
   useEffect(() => {
     if (tourStep !== null) setView(TOUR[tourStep].view);
