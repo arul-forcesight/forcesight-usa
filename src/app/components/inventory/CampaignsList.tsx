@@ -1,4 +1,4 @@
-import { Plus, Eye, Pencil } from "lucide-react";
+import { Plus, Eye, Pencil, Compass } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { ChannelIcon } from "../ChannelBadge";
@@ -29,9 +29,11 @@ function Channels({ channels }: { channels: Campaign["channels"] }) {
 export function CampaignsList({
   onCreate,
   onOpen,
+  onStartTour,
 }: {
   onCreate: () => void;
   onOpen: (c: Campaign) => void;
+  onStartTour?: () => void;
 }) {
   return (
     <div className="w-full">
@@ -44,13 +46,23 @@ export function CampaignsList({
               Create and manage your WENR forecast cycles
             </p>
           </div>
-          <Button onClick={onCreate} className="gap-2 bg-[#007fff] hover:bg-[#0069d6] shrink-0">
-            <Plus className="w-4 h-4" />
-            New Forecast Cycle
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="outline"
+              onClick={onStartTour}
+              className="gap-2"
+            >
+              <Compass className="w-4 h-4" />
+              Guided tour
+            </Button>
+            <Button data-tour="new-cycle" onClick={onCreate} className="gap-2 bg-[#007fff] hover:bg-[#0069d6]">
+              <Plus className="w-4 h-4" />
+              New Forecast Cycle
+            </Button>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div data-tour="cycles-table" className="overflow-x-auto">
           <table className="w-full min-w-[760px]">
             <thead>
               <tr className="border-y border-[#eef1f4] text-left">

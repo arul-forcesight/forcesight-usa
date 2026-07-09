@@ -85,7 +85,7 @@ export function ForecastDetail({
             defaultValue={campaign?.name ?? "Budget FY26"}
             className="w-full sm:w-[360px] h-11 font-semibold text-[#0a335c] focus-visible:ring-[#007fff]/40 focus-visible:border-[#007fff]"
           />
-          <Button className="bg-[#007fff] hover:bg-[#0069d6] shrink-0">
+          <Button data-tour="approve" className="bg-[#007fff] hover:bg-[#0069d6] shrink-0">
             Approve Plan
           </Button>
         </div>
@@ -191,7 +191,7 @@ export function ForecastDetail({
         </div>
 
         {/* Forecast Table card */}
-        <div className="bg-white border border-[#e6e8ea] rounded-2xl p-4 sm:p-5">
+        <div data-tour="forecast-table" className="bg-white border border-[#e6e8ea] rounded-2xl p-4 sm:p-5">
           <p className="text-[#0a335c] mb-4">
             <span className="font-semibold">Forecast Table:</span>{" "}
             <span className="text-gray-500">Engine generated</span>

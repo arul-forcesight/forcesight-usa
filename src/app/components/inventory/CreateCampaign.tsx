@@ -189,7 +189,7 @@ export function CreateCampaign({
       {/* Main wizard card */}
       <div className="w-full bg-white border border-[#e6e8ea] rounded-2xl overflow-hidden">
         {/* Wizard step tabs */}
-        <div className="flex items-center gap-2 flex-wrap p-4 border-b border-[#eef1f4]">
+        <div data-tour="wizard-tabs" className="flex items-center gap-2 flex-wrap p-4 border-b border-[#eef1f4]">
           <StepPill value="setup" icon={Calendar} label="Setup" />
           <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
           <StepPill value="reference" icon={Database} label="Reference Data" />
@@ -251,7 +251,7 @@ export function CreateCampaign({
             </div>
 
             {/* Step 3 — Target selection */}
-            <div className="space-y-4">
+            <div data-tour="target" className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-[#007fff]" />

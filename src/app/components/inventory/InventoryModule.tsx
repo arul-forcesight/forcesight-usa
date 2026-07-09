@@ -4,9 +4,21 @@ import { CampaignsList } from "./CampaignsList";
 import { CreateCampaign } from "./CreateCampaign";
 import { ForecastDetail } from "./ForecastDetail";
 import { HelixPanel } from "./HelixPanel";
+import { InventoryTour, TourStep } from "./InventoryTour";
 import { Campaign } from "./data";
 
 type View = "list" | "create" | "detail";
+
+/** Guided-tour steps — one simple line each, walking the whole flow. */
+const TOUR: (TourStep & { view: View })[] = [
+  { view: "list", target: "new-cycle", title: "Start here", body: "Create a new forecast cycle." },
+  { view: "list", target: "cycles-table", title: "Your cycles", body: "Every forecast cycle lives in this table." },
+  { view: "create", target: "wizard-tabs", title: "Three steps", body: "Setup, then reference data, then adjustments." },
+  { view: "create", target: "target", title: "Pick items", body: "Choose the items to forecast — filter to narrow down." },
+  { view: "detail", target: "forecast-table", title: "The forecast", body: "Review what the engine generated." },
+  { view: "detail", target: "approve", title: "Approve", body: "Approve the plan when it looks right." },
+  { view: "list", target: "ask-ai", title: "Ask AI", body: "Ask about any scenario, anytime." },
+];
 
 /**
  * Inventory · Sell-in / Sell-out Forecast (WENR) module.
@@ -28,6 +40,12 @@ export function InventoryModule({
 }) {
   const [view, setView] = useState<View>("list");
   const [active, setActive] = useState<Campaign | null>(null);
+  const [tourStep, setTourStep] = useState<number | null>(null);
+
+  // While the tour runs, drive the page to each step's view.
+  useEffect(() => {
+    if (tourStep !== null) setView(TOUR[tourStep].view);
+  }, [tourStep]);
 
   useEffect(() => {
     window.history.replaceState({ inv: "list" }, "");
@@ -50,6 +68,7 @@ export function InventoryModule({
           <CampaignsList
             onCreate={() => navigate("create")}
             onOpen={(c) => navigate("detail", c)}
+            onStartTour={() => setTourStep(0)}
           />
         )}
 
@@ -83,7 +102,10 @@ export function InventoryModule({
           aiOpen ? "lg:pr-[440px]" : ""
         }`}
       >
-        <div className="pointer-events-auto flex items-center gap-3 w-full max-w-[620px] bg-gradient-to-r from-[#1f8bff] to-[#0069d6] text-white rounded-full pl-5 pr-2 py-2 shadow-lg shadow-blue-500/25">
+        <div
+          data-tour="ask-ai"
+          className="pointer-events-auto flex items-center gap-3 w-full max-w-[620px] bg-gradient-to-r from-[#1f8bff] to-[#0069d6] text-white rounded-full pl-5 pr-2 py-2 shadow-lg shadow-blue-500/25"
+        >
           <input
             className="flex-1 bg-transparent placeholder-white/80 text-sm text-white outline-none"
             placeholder={`Ask AI... "What if demand drops 20%?" or "Explain this scenario"`}
@@ -93,6 +115,17 @@ export function InventoryModule({
           </button>
         </div>
       </div>
+
+      {/* Guided tour */}
+      {tourStep !== null && (
+        <InventoryTour
+          steps={TOUR}
+          index={tourStep}
+          onNext={() => setTourStep((s) => (s === null ? null : Math.min(s + 1, TOUR.length - 1)))}
+          onBack={() => setTourStep((s) => (s === null ? null : Math.max(s - 1, 0)))}
+          onClose={() => setTourStep(null)}
+        />
+      )}
     </div>
   );
 }
