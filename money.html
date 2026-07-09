@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForceSight — Money</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ForceSight product theme */
+    --canvas:#f6f8fc; --surface:#ffffff; --surface-2:#f7f8fb;
+    --ink:#262e36; --ink-2:#475569; --muted:#8999a9; --faint:#adb3b8;
+    --hair:#e6e8ea; --hair-2:#ebf0f4;
+    --accent:#027FFF; --accent-2:#0067d6; --accent-bg:#e0f0ff;
+    --gold:#059669; --gold-bg:#d8f3e6;        /* data-verified (green) */
+    --silver:#2563eb; --silver-bg:#e2edff;    /* evidence on file (blue) */
+    --bronze:#d97706; --bronze-bg:#fcecd6;    /* attested (amber) */
+    --leak:#dc2626; --leak-bg:#fde7e9;        /* losing (red) */
+    --violet:#6366f1; --blue:#027FFF;
+    --sh-sm:0 1px 2px rgba(30,41,59,.06);
+    --sh:0 1px 3px rgba(30,41,59,.07),0 8px 24px rgba(30,41,59,.07);
+    --sh-lg:0 8px 24px rgba(30,41,59,.12),0 30px 70px rgba(30,41,59,.16);
+    --ease:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(79,70,229,0.05), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(139,92,246,0.04), transparent 60%),
+      var(--canvas);
+    color:var(--ink);font-family:'Outfit',sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden;}
+  .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-feature-settings:"tnum";}
+  .gk{font-family:'Outfit',sans-serif;letter-spacing:-0.01em;}
+  ::-webkit-scrollbar{width:7px;height:7px;}
+  ::-webkit-scrollbar-thumb{background:#c8ccd2;border-radius:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  .app{display:flex;height:100vh;}
+
+  /* ===== SIDEBAR (product chrome, light, collapsible) ===== */
+  .side{width:248px;background:var(--surface);border-right:1px solid var(--hair);display:flex;flex-direction:column;flex-shrink:0;transition:width .24s var(--ease);}
+  .side.collapsed{width:76px;}
+  .side-brand{display:flex;align-items:center;gap:11px;height:72px;padding:0 18px;border-bottom:1px solid var(--hair);}
+  .side-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(145deg,#027FFF,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0;box-shadow:0 2px 8px rgba(2,127,255,.3);}
+  .side-brand .nm{font-weight:600;font-size:17px;color:var(--ink);}
+  .side-brand .tg{font-size:10px;color:var(--muted);margin-top:-2px;}
+  .side-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 12px;}
+  .nav-sec{font-size:10px;font-family:ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding:14px 12px 8px;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;font-size:13.5px;cursor:pointer;color:var(--ink-2);transition:background .15s var(--ease),color .15s var(--ease);margin-bottom:2px;position:relative;white-space:nowrap;}
+  .nav-item:hover{background:#f3f5f6;}
+  .nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:600;}
+  .nav-item.active .ic{color:var(--accent);}
+  .nav-item .ic{width:18px;height:18px;flex-shrink:0;}
+  .nav-item .badge{margin-left:auto;font-size:10px;font-family:ui-monospace,monospace;background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;}
+  .nav-item.active .badge{background:var(--accent);color:#fff;}
+  .nav-item.muted{color:var(--faint);cursor:default;}
+  .nav-item.muted:hover{background:transparent;}
+  .nav-chevron{margin-left:auto;width:13px;height:13px;color:var(--muted);transition:transform .2s var(--ease);}
+  .nav-chevron.open{transform:rotate(180deg);}
+  .submenu{margin:2px 0 6px;padding-left:10px;border-left:1px solid var(--hair);margin-left:20px;overflow:hidden;}
+  .sub-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:9px;font-size:13px;cursor:pointer;color:var(--ink-2);transition:background .15s var(--ease),color .15s var(--ease);margin-bottom:1px;white-space:nowrap;}
+  .sub-item:hover{background:#f3f5f6;}
+  .sub-item.active{background:var(--accent-bg);color:var(--accent);font-weight:600;}
+  .sub-item .sic{width:15px;height:15px;flex-shrink:0;}
+  .sub-item .badge{margin-left:auto;font-size:9.5px;font-family:ui-monospace,monospace;background:var(--accent);color:#fff;border-radius:10px;padding:1px 6px;}
+  .side-foot{border-top:1px solid var(--hair);padding:10px;}
+  .side-user{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;}
+  .side-user .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(145deg,#027FFF,#4f46e5);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;}
+  .side-user .un{font-size:13px;color:var(--ink);font-weight:600;white-space:nowrap;}
+  .side-user .ur{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .collapse-btn{width:100%;display:flex;align-items:center;gap:11px;padding:9px 12px;border:none;background:transparent;border-radius:10px;color:var(--muted);cursor:pointer;font-family:'Outfit';font-size:13px;transition:background .15s;}
+  .collapse-btn:hover{background:#f3f5f6;}
+  .collapse-btn svg{width:18px;height:18px;flex-shrink:0;transition:transform .24s var(--ease);}
+  .side.collapsed #collapseArrow{transform:rotate(180deg);}
+  /* collapsed: hide text, center icons, show tooltips */
+  .side.collapsed .label,.side.collapsed .nav-sec,.side.collapsed .brand-text,.side.collapsed .nav-chevron,.side.collapsed .submenu,.side.collapsed .badge,.side.collapsed .side-user>div:not(.av){display:none;}
+  .side.collapsed .nav-item,.side.collapsed .side-brand,.side.collapsed .side-user,.side.collapsed .collapse-btn{justify-content:center;gap:0;}
+  .side.collapsed .side-brand{padding:0;}
+  .tip{position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%) scale(.96);background:var(--ink);color:#fff;font-size:12px;font-weight:500;padding:6px 10px;border-radius:8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .12s,transform .12s;z-index:60;box-shadow:var(--sh-lg);}
+  .tip::before{content:'';position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:var(--ink);}
+  .side.collapsed .nav-item:hover .tip{opacity:1;transform:translateY(-50%) scale(1);}
+  .side:not(.collapsed) .tip{display:none;}
+
+  /* ===== MAIN ===== */
+  .main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:72px;border-bottom:1px solid var(--hair);background:var(--surface);flex-shrink:0;}
+  .tb-left{display:flex;align-items:center;gap:14px;}
+  .hamb{width:38px;height:38px;border-radius:10px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--ink-2);cursor:pointer;transition:background .15s;}
+  .hamb:hover{background:var(--canvas);}
+  .tb-crumb-main{font-size:19px;font-weight:500;color:var(--ink);}
+  .tb-crumb-main .pre{color:var(--muted);}
+  .tb-right{display:flex;align-items:center;gap:14px;}
+  .tb-crumb-main{line-height:1.25;}
+  .tb-search{position:relative;}
+  .tb-search input{width:280px;height:40px;padding:0 42px 0 16px;background:var(--canvas);border:none;border-radius:10px;font-family:'Outfit';font-size:13.5px;color:var(--ink);outline:none;}
+  .tb-search input::placeholder{color:var(--muted);}
+  .tb-search svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted);}
+  .tb-icon{position:relative;width:40px;height:40px;border-radius:10px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--ink-2);cursor:pointer;transition:background .15s;}
+  .tb-icon:hover{background:var(--canvas);}
+  .tb-icon .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--leak);}
+  .tb-av{width:40px;height:40px;border-radius:50%;background:#ffedd5;border:1px solid #fed7aa;color:#ea580c;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;cursor:pointer;flex-shrink:0;}
+
+  /* Money sub-header (greeting + push + date + tour) */
+  .money-sub{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 30px;border-bottom:1px solid var(--hair);background:var(--surface);flex-shrink:0;flex-wrap:wrap;}
+  .ms-title{font-size:18px;font-weight:600;letter-spacing:-0.01em;}
+  .ms-crumb{font-size:12.5px;color:var(--muted);margin-top:1px;}
+  .ms-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .tb-date{font-size:12px;color:var(--muted);font-family:ui-monospace,monospace;}
+  .tb-wa{display:inline-flex;align-items:center;gap:7px;background:var(--gold-bg);color:var(--gold);font-size:11.5px;font-weight:500;padding:6px 11px;border-radius:8px;}
+  .tour-btn{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;color:#fff;background:linear-gradient(135deg,#4f46e5,#027FFF);padding:7px 13px;border-radius:9px;cursor:pointer;box-shadow:0 3px 10px rgba(2,127,255,.3);transition:all .16s var(--ease);}
+  .tour-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(2,127,255,.42);}
+
+  /* metrics strip */
+  .metrics{display:flex;gap:14px;padding:18px 30px;border-bottom:1px solid var(--hair);background:var(--surface);flex-shrink:0;}
+  .metric{flex:1;border:1px solid var(--hair);border-radius:14px;padding:16px 20px;position:relative;overflow:hidden;background:var(--surface);box-shadow:var(--sh-sm);}
+  .metric .mk{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .metric .mk::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--mc);box-shadow:0 0 0 3px var(--mc-soft);flex-shrink:0;}
+  .metric .mv{font-weight:700;font-size:30px;line-height:1;letter-spacing:-0.02em;color:var(--ink);}
+  .metric .mv .c{font-size:18px;color:var(--mc);font-weight:600;vertical-align:2px;margin-right:1px;}
+  .metric .ms{font-size:12px;color:var(--muted);margin-top:9px;}
+  .metrics .metric:nth-child(1){--mc:#027FFF;--mc-soft:#dbecff;background:linear-gradient(180deg,#f6faff,#fff);border-color:#e2edfb;}
+  .metrics .metric:nth-child(2){--mc:#059669;--mc-soft:#cceee1;background:linear-gradient(180deg,#f4fbf8,#fff);border-color:#d8ede5;}
+  .metric.fs{--mc:#4f46e5;--mc-soft:#ddd9fb;background:linear-gradient(180deg,#f7f6ff,#fff);border-color:#e4e1fb;}
+
+  .content{flex:1;overflow-y:auto;padding:26px 30px 50px;transition:opacity .24s var(--ease),transform .24s var(--ease);}
+  .content.swapping{opacity:0;transform:translateY(8px);}
+  .wrap{max-width:1240px;margin:0 auto;}
+
+  /* ===== shared ===== */
+  .pill{display:inline-flex;align-items:center;font-size:11.5px;font-family:'Outfit';letter-spacing:0;padding:3px 11px;border-radius:8px;margin-right:7px;font-weight:600;}
+  .pill.losing{background:var(--leak-bg);color:var(--leak);} .pill.owed{background:var(--gold-bg);color:var(--gold);}
+  .pill.trapped{background:var(--bronze-bg);color:var(--bronze);} .pill.risk{background:var(--accent-bg);color:var(--accent-2);}
+  .cat{font-size:11px;font-family:'Outfit';padding:3px 10px;border-radius:8px;letter-spacing:.02em;font-weight:700;}
+  .cat.profit{background:var(--leak-bg);color:var(--leak);} .cat.ads{background:#ede9fe;color:#7c3aed;}
+  .cat.inventory{background:var(--bronze-bg);color:var(--bronze);} .cat.recon{background:var(--gold-bg);color:var(--gold);}
+  .vbadge{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-family:ui-monospace,monospace;padding:3px 10px;border-radius:20px;white-space:nowrap;font-weight:500;}
+  .vbadge.gold{background:var(--gold-bg);color:var(--gold);} .vbadge.silver{background:var(--silver-bg);color:var(--silver);} .vbadge.bronze{background:var(--bronze-bg);color:var(--bronze);}
+  .btn{border:none;border-radius:10px;padding:11px 18px;font-family:'Outfit';font-size:13.5px;font-weight:600;cursor:pointer;transition:all .17s var(--ease);}
+  .btn-primary{background:linear-gradient(135deg,#027FFF,#0067d6);color:#fff;box-shadow:0 3px 10px rgba(2,127,255,.3);} .btn-primary:hover{background:linear-gradient(135deg,#0073ec,#005bc0);transform:translateY(-1px);box-shadow:0 6px 18px rgba(2,127,255,.4);}
+  .btn-ghost{background:var(--surface);border:1px solid var(--hair);color:var(--ink-2);} .btn-ghost:hover{border-color:var(--accent);color:var(--accent-2);}
+  .back{font-size:13px;color:var(--accent-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:18px;transition:gap .17s var(--ease);} .back:hover{gap:9px;}
+  .av{border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0;}
+
+  /* one thing + brief */
+  .onething{background:linear-gradient(135deg,#fff5f5,#fde8ec 70%,#fdeef5);border:1px solid #f8d3da;border-radius:15px;padding:18px 20px;margin-bottom:24px;}
+  .ot-lbl{font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.14em;color:var(--leak);font-weight:700;margin-bottom:7px;}
+  .ot-txt{font-size:16px;line-height:1.5;color:#8a1c2e;} .ot-txt b{font-weight:600;}
+  .sec-lbl{font-size:11px;font-weight:600;color:var(--muted);margin:24px 0 13px;display:flex;justify-content:space-between;align-items:center;font-family:ui-monospace,monospace;letter-spacing:.05em;text-transform:uppercase;}
+  .sec-lbl .r{font-weight:400;text-transform:none;letter-spacing:0;color:var(--faint);}
+  .prob{display:flex;gap:16px;align-items:center;padding:16px 18px;border:1px solid var(--hair);border-radius:15px;margin-bottom:11px;background:var(--surface);box-shadow:var(--sh-sm);transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease);animation:cardIn .42s var(--ease) both;}
+  .prob .ttl{display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+  .one-badge{position:relative;display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:3px 10px;border-radius:7px;margin-left:8px;cursor:help;box-shadow:0 2px 8px rgba(79,70,229,.3);}
+  .one-badge .one-tip{position:absolute;left:0;top:calc(100% + 10px);width:auto;white-space:nowrap;max-width:78vw;background:var(--ink);color:#fff;font-size:12.5px;font-weight:500;line-height:1.55;letter-spacing:0;text-transform:none;padding:9px 13px;border-radius:10px;box-shadow:var(--sh-lg);opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .15s var(--ease),transform .15s var(--ease);z-index:50;}
+  .one-badge .one-tip b{font-weight:700;color:#fff;}
+  .one-badge .one-tip::before{content:'';position:absolute;bottom:100%;left:20px;border:6px solid transparent;border-bottom-color:var(--ink);}
+  .one-badge:hover .one-tip{opacity:1;transform:translateY(0);}
+  .prob:hover{transform:translateY(-2px);box-shadow:var(--sh);}
+  .prob.live-ring{border-color:#ff3b3b;box-shadow:0 0 0 3px rgba(255,59,59,.10),var(--sh-sm);}
+  .prob .rk{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;background:var(--surface-2);border:1px solid var(--hair);font-size:13px;font-weight:700;color:var(--muted);flex-shrink:0;}
+  .prob .mid{flex:1;min-width:0;cursor:pointer;display:flex;flex-direction:column;justify-content:center;}
+  .prob .ttl{font-size:16px;font-weight:600;margin-bottom:5px;letter-spacing:-0.01em;}
+  .prob .sub{font-size:12.5px;color:var(--muted);line-height:1.45;}
+  .prob .right{text-align:right;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:3px;}
+  .prob .amt{font-family:ui-monospace,monospace;font-size:17px;font-weight:700;}
+  .prob .pct{font-size:11px;font-weight:500;}
+  .prob .pacts{display:flex;gap:8px;margin-top:11px;}
+  .pa-btn{font-size:12.5px;font-weight:600;color:#fff;background:linear-gradient(135deg,#027FFF,#0067d6);border:none;border-radius:9px;padding:8px 15px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(2,127,255,.28);transition:all .15s var(--ease);font-family:'Outfit';}
+  .pa-btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(2,127,255,.42);}
+  .pa-ghost{font-size:12.5px;font-weight:600;color:var(--ink-2);background:var(--surface);border:1px solid var(--hair);border-radius:9px;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s var(--ease);font-family:'Outfit';}
+  .pa-ghost:hover{border-color:var(--accent);color:var(--accent-2);background:var(--accent-bg);}
+  .prob-menu{position:relative;display:inline-flex;}
+  .pm-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--hair);background:var(--surface);color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .15s var(--ease);}
+  .pm-btn:hover{border-color:var(--accent);color:var(--accent-2);background:var(--accent-bg);}
+  .pm-pop{position:absolute;bottom:calc(100% + 6px);left:0;min-width:180px;background:var(--surface);border:1px solid var(--hair);border-radius:11px;box-shadow:var(--sh-lg);padding:5px;display:none;z-index:40;}
+  .pm-pop.open{display:block;animation:fadeUp .16s var(--ease) both;}
+  .pm-item{width:100%;text-align:left;font-size:13px;font-weight:500;font-family:'Outfit';color:var(--ink-2);background:transparent;border:none;border-radius:8px;padding:9px 11px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .13s var(--ease),color .13s var(--ease);white-space:nowrap;}
+  .pm-item:hover{background:var(--leak-bg);color:var(--leak);}
+  .dm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 2px 14px;padding:11px 15px;background:var(--surface);border:1px solid var(--hair);border-radius:12px;box-shadow:var(--sh-sm);}
+  .dm-all{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);font-weight:500;cursor:pointer;user-select:none;}
+  .dm-count{font-size:12.5px;color:var(--muted);}
+  .dm-actions{margin-left:auto;display:flex;gap:9px;}
+  .dm-btn{font-size:13px;font-weight:600;font-family:'Outfit';border:1px solid var(--hair);background:var(--surface);color:var(--ink-2);border-radius:9px;padding:8px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s var(--ease);}
+  .dm-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent-2);}
+  .dm-btn.danger:hover:not(:disabled){border-color:var(--leak);color:var(--leak);background:var(--leak-bg);}
+  .dm-btn:disabled{opacity:.42;cursor:not-allowed;}
+  .dm-check{display:flex;align-items:center;padding-top:3px;flex-shrink:0;}
+  .dm-cb,.dm-all input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+  .dm-card{opacity:.9;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .track{display:flex;gap:16px;align-items:flex-start;border:1px solid var(--hair);border-radius:15px;padding:15px 18px;margin-bottom:11px;background:var(--surface);box-shadow:var(--sh-sm);animation:cardIn .42s var(--ease) both;position:relative;}
+  .track.clickable{cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease),border-color .18s var(--ease);}
+  .track.clickable:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:#d5dae1;}
+  .tk-main{flex:1;min-width:0;}
+  .tk-right{flex-shrink:0;text-align:right;white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:100px;}
+  .tk-amt{font-family:ui-monospace,monospace;font-size:20px;font-weight:700;line-height:1.05;letter-spacing:-0.01em;}
+  .tk-imp-sub{font-size:10.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .tk-ttl{font-size:15px;font-weight:600;margin-bottom:6px;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .tk-sol{font-size:12.5px;color:var(--ink-2);margin-bottom:2px;line-height:1.45;} .tk-sol .tk-fix{color:var(--muted);font-weight:600;}
+  .track .track-go{display:inline-block;margin-top:auto;padding-top:10px;font-size:12px;font-weight:600;color:var(--accent-2);opacity:0;transition:opacity .16s var(--ease);}
+  .track.clickable:hover .track-go{opacity:1;}
+  .track .tt{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start;letter-spacing:-0.01em;}
+  .track .ta{font-size:12.5px;color:var(--muted);margin-bottom:10px;line-height:1.45;} .track .ta b{color:var(--ink-2);font-weight:600;}
+  .statline{display:flex;align-items:center;font-size:10.5px;font-family:ui-monospace,monospace;color:var(--muted);flex-wrap:wrap;gap:2px;}
+  .st{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;}
+  .st .sd{width:6px;height:6px;border-radius:50%;background:var(--hair);} .st.on .sd{background:currentColor;}
+  .st.s-a.on{color:var(--bronze);background:var(--bronze-bg);} .st.s-v.on{color:var(--muted);background:var(--surface-2);} .st.s-d.on{color:var(--gold);background:var(--gold-bg);}
+  .stsep{color:var(--hair);padding:0 3px;}
+  .spin{display:inline-block;animation:sp 1s linear infinite;} @keyframes sp{to{transform:rotate(360deg);}}
+  .outcome{margin-top:11px;font-size:12.5px;color:var(--ink-2);line-height:1.5;border-top:1px solid var(--hair-2);padding-top:11px;}
+  .outcome .otop{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+  .outcome b{color:var(--ink);font-weight:600;}
+  .evchip{display:inline-flex;align-items:center;gap:6px;background:var(--silver-bg);color:var(--silver);font-size:11px;font-family:ui-monospace,monospace;padding:3px 9px;border-radius:7px;}
+  .floor-note{font-size:11.5px;color:var(--faint);margin:18px 2px 0;line-height:1.55;}
+
+  /* drill */
+  .modtabs{display:flex;gap:2px;border-bottom:1px solid var(--hair);margin-bottom:20px;flex-wrap:wrap;}
+  .modtab{font-size:15px;font-weight:500;padding:11px 18px;cursor:pointer;color:var(--ink-2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .16s var(--ease);}
+  .modtab:hover{color:var(--ink);} .modtab.active{color:var(--accent-2);border-bottom-color:var(--accent);font-weight:600;}
+  .modtab .ct{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--ink-2);margin-left:7px;background:var(--surface-2);border:1px solid var(--hair);padding:2px 8px;border-radius:20px;}
+  .modtab.active .ct{background:var(--accent-bg);border-color:transparent;color:var(--accent-2);}
+  /* Brief tabs */
+  .brief-tab{display:none;}
+  .brief-tab.on{display:block;animation:fadeUp .25s var(--ease) both;}
+  .brief-cap{font-size:10.5px;color:var(--faint);text-align:right;margin:0 2px 12px;font-family:ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;}
+  .sortbar{display:flex;align-items:center;gap:9px;margin:0 2px 15px;}
+  .sortbar .sb-lbl{font-size:12.5px;color:var(--muted);font-weight:500;}
+  .sb-sel-wrap{position:relative;display:inline-flex;align-items:center;}
+  .sortsel{appearance:none;-webkit-appearance:none;font-family:'Outfit';font-size:13.5px;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:8px 34px 8px 13px;cursor:pointer;transition:border-color .15s var(--ease),box-shadow .15s var(--ease);}
+  .sortsel:hover{border-color:var(--accent);} .sortsel:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2,127,255,.12);}
+  .sb-caret{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  .item-time{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:9px;font-size:11.5px;color:var(--ink-2);font-weight:500;line-height:1.4;}
+  .item-time .clk{color:var(--muted);flex-shrink:0;margin-right:1px;}
+  .item-time .it-k{color:var(--muted);font-weight:400;}
+  .item-time .it-dot{color:var(--faint);}
+  .prob .item-time{margin-top:7px;}
+  .brief-empty{text-align:center;color:var(--muted);font-size:13.5px;padding:46px 24px;border:1px dashed var(--hair);border-radius:15px;background:var(--surface);}
+  .dd-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px;}
+  .dd-head h2{font-size:23px;font-weight:600;line-height:1.16;margin-bottom:11px;letter-spacing:-0.02em;}
+  .dd-meta{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted);}
+  .dd-meta .amt{font-family:ui-monospace,monospace;font-weight:600;color:var(--ink);font-size:15px;}
+  .conf{font-size:11px;display:inline-flex;align-items:center;gap:4px;}
+  .proof{background:var(--surface);border:1px solid var(--hair);border-radius:13px;padding:15px 18px;margin-bottom:22px;box-shadow:var(--sh-sm);}
+  .proof .ph{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:11px;display:flex;justify-content:space-between;font-family:ui-monospace,monospace;letter-spacing:.04em;text-transform:uppercase;}
+  .proof .ph .trace{font-weight:400;color:var(--accent-2);font-size:11px;text-transform:none;letter-spacing:0;cursor:pointer;}
+  .proof-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--hair-2);} .proof-row:last-child{border-bottom:none;}
+  .proof-row .pv{font-family:ui-monospace,monospace;}
+  .capstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:-4px 0 22px;}
+  .capcell{background:var(--surface-2);border:1px solid var(--hair-2);border-radius:12px;padding:12px 14px;}
+  .capcell .cv{font-size:18px;font-weight:600;} .capcell .ck{font-size:10px;color:var(--muted);font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;margin-top:3px;}
+  .dec-h{font-size:17px;font-weight:600;margin-bottom:5px;letter-spacing:-0.01em;}
+  .dec-sub{font-size:13px;color:var(--muted);margin-bottom:16px;}
+  .levers{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .lever{border:1px solid var(--hair);border-radius:14px;padding:16px;cursor:pointer;background:var(--surface);box-shadow:var(--sh-sm);transition:transform .17s var(--ease),box-shadow .17s var(--ease),border-color .17s var(--ease);}
+  .lever:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:#d4dae2;}
+  .lever.sel{border-color:var(--accent);background:var(--accent-bg);box-shadow:0 0 0 3px rgba(2,127,255,.12);}
+  .lever .pick{width:17px;height:17px;border-radius:50%;border:2px solid var(--faint);flex-shrink:0;transition:all .15s var(--ease);}
+  .lever:hover .pick{border-color:var(--accent);}
+  .lever.sel .pick{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 3px #fff;}
+  .lever .lt-l{display:flex;align-items:center;gap:9px;min-width:0;}
+  .lever .lt-l span{overflow:hidden;text-overflow:ellipsis;}
+  .lever .lt{font-size:14px;font-weight:600;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  /* decision header + ask helix */
+  .dec-head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px;flex-wrap:wrap;}
+  .dec-head-row .dec-h{margin-bottom:5px;} .dec-head-row .dec-sub{margin-bottom:0;}
+  .btn-helix{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1e1b4b,#4338ca 60%,#6d28d9);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-family:'Outfit';font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(79,70,229,.4);transition:all .16s var(--ease);white-space:nowrap;flex-shrink:0;}
+  .btn-helix:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(79,70,229,.5);filter:brightness(1.08);}
+  .btn-helix .orb{width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c4b5fd,#8b5cf6 55%,#4f46e5 85%);box-shadow:0 0 8px rgba(139,92,246,.7);animation:helixPulse 2.4s ease-in-out infinite;}
+  @keyframes helixPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.18);}}
+  /* trace chip */
+  .proof .ph .trace{font-weight:600;color:var(--accent-2);font-size:11px;text-transform:none;letter-spacing:0;cursor:pointer;border:1px solid var(--accent-bg);background:var(--accent-bg);padding:4px 10px;border-radius:20px;transition:all .15s var(--ease);}
+  .proof .ph .trace:hover{border-color:var(--accent);background:#fff;}
+  /* ===== Helix AI chat drawer ===== */
+  .helix-scrim{position:fixed;inset:0;background:rgba(11,18,32,.45);backdrop-filter:blur(3px);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s var(--ease);}
+  .helix-scrim.show{opacity:1;pointer-events:auto;}
+  .helix-drawer{position:fixed;top:0;right:0;height:100vh;width:440px;max-width:92vw;background:var(--surface);box-shadow:-12px 0 40px rgba(11,18,32,.22);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s var(--ease);}
+  .helix-drawer.show{transform:translateX(0);}
+  .hx-head{background:linear-gradient(135deg,#0b1220,#312e81 70%,#4338ca);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden;}
+  .hx-head::before{content:'';position:absolute;inset:0;background:radial-gradient(400px 140px at 20% 0%,rgba(139,92,246,.35),transparent 60%);}
+  .hx-head>*{position:relative;z-index:1;}
+  .hx-orb{width:38px;height:38px;border-radius:11px;background:radial-gradient(circle at 30% 30%,#c4b5fd,#8b5cf6 50%,#4f46e5 85%);box-shadow:0 0 0 4px rgba(139,92,246,.18),0 0 22px rgba(139,92,246,.55);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .hx-orb svg{color:#fff;}
+  .hx-head .hx-nm{font-size:16px;font-weight:600;} .hx-head .hx-tg{font-size:11.5px;color:#c7d2fe;margin-top:1px;}
+  .hx-close{margin-left:auto;width:32px;height:32px;border-radius:9px;border:none;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  .hx-close:hover{background:rgba(255,255,255,.22);}
+  .hx-ctx{padding:11px 20px;background:var(--surface-2);border-bottom:1px solid var(--hair);font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:7px;}
+  .hx-ctx b{color:var(--ink-2);font-weight:600;}
+  .hx-msgs{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+  .hx-msg{max-width:88%;font-size:13.5px;line-height:1.5;border-radius:14px;padding:11px 14px;animation:fadeUp .25s var(--ease) both;}
+  .hx-msg.ai{background:var(--surface-2);border:1px solid var(--hair);color:var(--ink-2);align-self:flex-start;border-bottom-left-radius:5px;}
+  .hx-msg.ai b{color:var(--ink);font-weight:600;}
+  .hx-msg.me{background:linear-gradient(135deg,#027FFF,#0067d6);color:#fff;align-self:flex-end;border-bottom-right-radius:5px;}
+  .hx-typing{align-self:flex-start;display:flex;gap:4px;padding:12px 14px;background:var(--surface-2);border:1px solid var(--hair);border-radius:14px;border-bottom-left-radius:5px;}
+  .hx-typing span{width:7px;height:7px;border-radius:50%;background:var(--faint);animation:hxb 1.2s infinite;}
+  .hx-typing span:nth-child(2){animation-delay:.2s;} .hx-typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes hxb{0%,60%,100%{opacity:.3;transform:translateY(0);}30%{opacity:1;transform:translateY(-4px);}}
+  .hx-sugs{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 12px;}
+  .hx-sug{font-size:12px;color:var(--accent-2);background:var(--accent-bg);border:1px solid transparent;border-radius:20px;padding:7px 12px;cursor:pointer;transition:all .15s var(--ease);}
+  .hx-sug:hover{border-color:var(--accent);background:#fff;}
+  .hx-input{display:flex;gap:9px;padding:14px 20px;border-top:1px solid var(--hair);background:var(--surface);}
+  .hx-input input{flex:1;border:1px solid var(--hair);border-radius:11px;padding:11px 14px;font-family:'Outfit';font-size:13.5px;color:var(--ink);outline:none;}
+  .hx-input input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(2,127,255,.1);}
+  .hx-send{border:none;border-radius:11px;width:44px;background:linear-gradient(135deg,#027FFF,#0067d6);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s var(--ease);}
+  .hx-send:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(2,127,255,.4);}
+  /* interactive elements should not be text-selectable (app feel) */
+  .nav-item,.sub-item,.prob,.lever,.track,.teamrow,.ptrow,.btn,.pa-btn,.pa-ghost,.btn-helix,.helix-fab,.chip,.modtab,.csopt,.addbtn,.hx-sug,.metric,.tour-btn,.collapse-btn,.vbadge,.cat,.pill,.stagechip,.back,.team-link,.proof .ph .trace{user-select:none;-webkit-user-select:none;}
+  /* ===== Ask Helix floating button (bottom-right, every screen) ===== */
+  .helix-fab{position:fixed;right:28px;bottom:26px;z-index:90;display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#1e1b4b,#4338ca 60%,#6d28d9);color:#fff;border:none;border-radius:30px;padding:13px 20px 13px 16px;font-family:'Outfit';font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 28px rgba(79,70,229,.45);transition:all .18s var(--ease);animation:fabIn .4s var(--ease) both;}
+  .helix-fab:hover{transform:translateY(-2px);box-shadow:0 12px 34px rgba(79,70,229,.55);filter:brightness(1.08);}
+  .helix-fab .hx-orb-sm{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#c4b5fd,#8b5cf6 55%,#4f46e5 85%);box-shadow:0 0 0 3px rgba(139,92,246,.2),0 0 12px rgba(139,92,246,.6);animation:helixPulse 2.4s ease-in-out infinite;flex-shrink:0;}
+  .helix-fab.hide{opacity:0;pointer-events:none;transform:translateY(8px) scale(.96);}
+  @keyframes fabIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .lever .ld{font-size:12.5px;color:var(--muted);line-height:1.45;margin-bottom:9px;}
+  .lever .lf{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--faint);}
+  .lever .lf-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .lever-helix{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#4f46e5;background:#ede9fe;border:1px solid transparent;border-radius:8px;padding:5px 10px;cursor:pointer;transition:all .15s var(--ease);font-family:'Outfit';white-space:nowrap;flex-shrink:0;user-select:none;}
+  .lever-helix:hover{background:#fff;border-color:#a5b4fc;}
+  .lever-helix .chat-ic{flex-shrink:0;}
+  .vtier{font-size:9px;font-family:ui-monospace,monospace;padding:2px 7px;border-radius:5px;white-space:nowrap;letter-spacing:.02em;font-weight:600;}
+  .vtier.gold{background:var(--gold-bg);color:var(--gold);} .vtier.silver{background:var(--silver-bg);color:var(--silver);} .vtier.bronze{background:var(--bronze-bg);color:var(--bronze);}
+  .route{margin-top:20px;border:1px solid var(--accent);background:var(--accent-bg);border-radius:15px;padding:20px;display:none;}
+  .route.show{display:block;animation:fadeUp .3s var(--ease) both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;}}
+  .route .rh{font-size:17px;font-weight:600;color:var(--accent-2);margin-bottom:6px;}
+  .route .impact{font-size:14.5px;color:var(--ink-2);margin-bottom:16px;line-height:1.55;} .route .impact b{color:var(--ink);font-weight:600;}
+  .route-line{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+  .route-line label{font-size:13.5px;color:var(--muted);min-width:76px;}
+  .tagbox{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--hair);border-radius:9px;padding:6px 11px;font-size:13px;}
+  .ev-attach{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px dashed var(--silver);color:var(--silver);border-radius:9px;padding:8px 14px;font-size:13.5px;cursor:pointer;transition:background .16s var(--ease);}
+  .ev-attach:hover{background:var(--silver-bg);}
+  .route textarea{width:100%;border:1px solid var(--hair);border-radius:9px;padding:11px 13px;font-family:'Outfit';font-size:14.5px;resize:none;background:var(--surface);color:var(--ink);}
+  .route textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2,127,255,.1);}
+  .btn-route{margin-top:13px;width:100%;background:linear-gradient(135deg,#027FFF,#0067d6);color:#fff;border:none;border-radius:11px;padding:14px;font-family:'Outfit';font-size:15.5px;font-weight:600;cursor:pointer;transition:all .17s var(--ease);box-shadow:0 4px 14px rgba(2,127,255,.32);}
+  .btn-route:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(2,127,255,.42);}
+  .route-btns{display:flex;gap:10px;margin-top:13px;}
+  .route-btns .btn-route{margin-top:0;flex:1;}
+  .btn-cancel{flex-shrink:0;background:var(--surface);border:1px solid var(--hair);color:var(--ink-2);border-radius:11px;padding:14px 22px;font-family:'Outfit';font-size:15.5px;font-weight:600;cursor:pointer;transition:all .17s var(--ease);}
+  .btn-cancel:hover{border-color:var(--leak);color:var(--leak);}
+  .handoff{display:none;text-align:center;padding:34px 20px;}
+  .handoff.show{display:block;animation:fadeUp .4s var(--ease) both;}
+  .handoff .hi{width:58px;height:58px;border-radius:50%;color:#fff;font-size:29px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:pop .45s var(--ease) both;}
+  @keyframes pop{0%{transform:scale(.5);opacity:0;}60%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+  .handoff h3{font-size:21px;font-weight:600;margin-bottom:9px;}
+  .handoff p{font-size:14px;color:var(--ink-2);max-width:48ch;margin:0 auto 6px;line-height:1.55;} .handoff p b{color:var(--ink);font-weight:600;}
+  .handoff .hbtns{margin-top:22px;display:flex;gap:10px;justify-content:center;}
+
+  /* dashboard deep view */
+  .dash-banner{background:linear-gradient(135deg,#0b1220,#312e81);color:#e7e3fb;border-radius:13px;padding:15px 19px;margin-bottom:22px;display:flex;align-items:center;gap:13px;font-size:13px;}
+  .dash-banner .di{width:34px;height:34px;border-radius:9px;background:linear-gradient(145deg,#6366f1,#027FFF);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .dash-banner b{color:#fff;}
+  table.dt{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--hair);border-radius:13px;overflow:hidden;}
+  table.dt thead th{text-align:left;font-size:10.5px;font-weight:500;color:var(--muted);padding:11px 15px;background:var(--surface-2);font-family:ui-monospace,monospace;letter-spacing:.03em;text-transform:uppercase;border-bottom:1px solid var(--hair);}
+  table.dt th.r,table.dt td.r{text-align:right;}
+  table.dt td{padding:11px 15px;border-bottom:1px solid var(--hair-2);} table.dt tbody tr:last-child td{border-bottom:none;}
+  table.dt tbody tr:hover{background:var(--surface-2);} table.dt tbody tr.dt-row{cursor:pointer;}
+  table.dt td.num{font-family:ui-monospace,monospace;} td.neg{color:var(--leak);} td.pos{color:var(--gold);}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap;}
+  .chip{font-size:12px;border:1px solid var(--hair);background:var(--surface);border-radius:8px;padding:6px 12px;color:var(--ink-2);}
+  .chip.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-2);}
+
+  /* tracking */
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;font-size:12px;color:var(--muted);align-items:center;}
+  .legend .li{display:flex;align-items:center;gap:7px;}
+  .ow{display:flex;align-items:center;gap:8px;}
+  .ow .av{width:26px;height:26px;font-size:10px;}
+  .stagechip{font-size:10.5px;font-family:ui-monospace,monospace;padding:3px 9px;border-radius:7px;display:inline-flex;align-items:center;gap:5px;}
+  .stage-verify{background:var(--surface-2);color:var(--muted);} .stage-done{background:var(--gold-bg);color:var(--gold);}
+  .stage-evid{background:var(--silver-bg);color:var(--silver);} .stage-watch{background:var(--bronze-bg);color:var(--bronze);} .stage-open{background:var(--leak-bg);color:var(--leak);}
+  .stagechip.stage-prog{background:var(--accent-bg);color:var(--accent-2);}
+
+  /* coach */
+  .addrow{margin:16px 0 0;}
+  .addbtn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--accent-2);cursor:pointer;border:1px dashed var(--accent);border-radius:11px;padding:11px 16px;background:var(--surface);transition:background .16s var(--ease);}
+  .addbtn:hover{background:var(--accent-bg);}
+  .cseg{display:flex;gap:8px;flex-wrap:wrap;width:100%;}
+  .csopt{flex:1;min-width:130px;border:1px solid var(--hair);border-radius:11px;padding:12px 14px;cursor:pointer;font-size:14px;transition:all .15s var(--ease);background:var(--surface);}
+  .csopt:hover{border-color:var(--accent);}
+  .csopt.sel{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px rgba(2,127,255,.14);}
+  .csopt .cst{font-weight:600;display:flex;align-items:center;gap:6px;}
+  .csopt .csd{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .csopt.sel.g .cst{color:var(--gold);} .csopt.sel.s .cst{color:var(--silver);} .csopt.sel.b .cst{color:var(--bronze);}
+  .csel{font-family:'Outfit';font-size:14.5px;border:1px solid var(--hair);border-radius:9px;padding:10px 12px;background:var(--surface);color:var(--ink);min-width:230px;}
+  .csel:focus{outline:none;border-color:var(--accent);}
+  .cinput{font-family:ui-monospace,monospace;font-size:14px;border:1px solid var(--hair);border-radius:9px;padding:10px 12px;background:var(--surface);color:var(--ink);max-width:200px;}
+  .cinput:focus{outline:none;border-color:var(--accent);}
+  .route-line.col{align-items:stretch;flex-direction:column;}
+  .route-line.col > label{margin-bottom:8px;}
+  .coach-overlay{position:fixed;inset:0;background:rgba(11,18,32,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:100;animation:fadeUp .3s var(--ease) both;}
+  .coach-card{background:var(--surface);border-radius:20px;max-width:480px;padding:30px 32px;box-shadow:var(--sh-lg);}
+  .coach-card .ce{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-2);margin-bottom:14px;}
+  .coach-card h3{font-size:23px;font-weight:600;margin-bottom:15px;letter-spacing:-0.01em;}
+  .coach-card ol{margin:0 0 4px;padding-left:20px;} .coach-card li{font-size:14px;color:var(--ink-2);padding:6px 0;line-height:1.5;} .coach-card li b{color:var(--ink);font-weight:600;}
+  .coach-card .cbtn{margin-top:22px;width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Outfit';font-size:14px;font-weight:600;cursor:pointer;}
+  .coach-card .cbtn:hover{background:var(--accent-2);}
+  .coach-pulse{animation:cp 1.7s ease-in-out infinite;border-radius:15px;}
+  @keyframes cp{0%,100%{box-shadow:var(--sh-sm),0 0 0 0 rgba(2,127,255,0);}50%{box-shadow:var(--sh-sm),0 0 0 4px rgba(2,127,255,.22);}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+  /* traced-to-source lineage */
+  .lineage{background:linear-gradient(135deg,#f2f8ff,#eef1fe);border:1px solid #d9e4fb;border-radius:13px;padding:13px 16px;margin-bottom:16px;}
+  .lineage .ln-h{font-size:10.5px;font-family:ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--silver);font-weight:600;margin-bottom:9px;}
+  .ln-path{display:flex;align-items:center;flex-wrap:wrap;gap:4px;}
+  .ln-step{font-size:11px;background:#fff;border:1px solid var(--hair);border-radius:7px;padding:5px 9px;color:var(--ink-2);}
+  .ln-step.last{border-color:var(--silver);background:var(--silver-bg);color:var(--silver);font-weight:600;}
+  .ln-arr{color:var(--faint);font-size:13px;}
+  .ow.clickable{cursor:pointer;border-radius:8px;padding:3px 6px;margin:-3px -6px;transition:background .15s var(--ease);}
+  .ow.clickable:hover{background:var(--accent-bg);}
+
+  /* person drilldown */
+  .person-head{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .person-head .ph-nm{font-size:21px;font-weight:600;}
+  .person-head .ph-rl{font-size:13px;color:var(--muted);margin-top:2px;}
+  .psumm{display:flex;gap:12px;margin-bottom:8px;}
+  .pscell{flex:1;background:var(--surface);border:1px solid var(--hair);border-radius:13px;padding:14px 16px;box-shadow:var(--sh-sm);}
+  .psv{font-weight:600;font-size:24px;line-height:1;}
+  .psk{font-size:10.5px;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px;}
+  .psec{font-size:11px;font-family:ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:22px 0 11px;}
+  .ptrow{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;padding:13px 16px;border:1px solid var(--hair);border-radius:13px;margin-bottom:9px;background:var(--surface);box-shadow:var(--sh-sm);animation:cardIn .42s var(--ease) both;}
+  .ptrow.clickable{cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease),border-color .18s var(--ease);}
+  .ptrow.clickable:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:#d5dae1;}
+  .ptrow .pt-t{font-size:14px;font-weight:600;margin-bottom:5px;letter-spacing:-0.01em;}
+  .ptrow .pt-age{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);min-width:30px;text-align:right;}
+  .ptrow .pt-age.stale{color:var(--leak);font-weight:600;}
+  .ptrow .pt-imp{font-family:ui-monospace,monospace;font-size:13.5px;font-weight:600;min-width:62px;text-align:right;}
+
+  /* guided tour spotlight */
+  .tour{display:none;position:fixed;inset:0;z-index:1000;}
+  .tour-block{position:absolute;inset:0;z-index:1000;}
+  .tour-hole{position:fixed;z-index:1001;border-radius:13px;border:2px solid #7da8ff;box-shadow:0 0 0 9999px rgba(11,18,32,.66);transition:left .35s var(--ease),top .35s var(--ease),width .35s var(--ease),height .35s var(--ease),opacity .2s;pointer-events:none;}
+  .tour-tip{position:fixed;z-index:1002;width:320px;background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(11,18,32,.4);padding:17px 19px;transition:left .35s var(--ease),top .35s var(--ease);}
+  .tt-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+  .tt-num{font-family:ui-monospace,monospace;font-size:11px;color:var(--accent-2);background:var(--accent-bg);padding:2px 9px;border-radius:20px;font-weight:600;}
+  .tt-exit{font-size:11px;color:var(--muted);cursor:pointer;}
+  .tt-exit:hover{color:var(--leak);}
+  .tt-title{font-size:16px;font-weight:600;margin-bottom:6px;letter-spacing:-0.01em;}
+  .tt-body{font-size:13px;color:var(--ink-2);line-height:1.55;margin-bottom:15px;}
+  .tt-acts{display:flex;align-items:center;justify-content:space-between;}
+  .tt-prev{font-size:12.5px;color:var(--muted);cursor:pointer;}
+  .tt-prev:hover{color:var(--ink);}
+  .tt-next{border:none;border-radius:9px;padding:9px 18px;font-family:'Outfit';font-size:13px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,#027FFF,#0067d6);color:#fff;box-shadow:0 3px 10px rgba(2,127,255,.3);transition:all .16s var(--ease);}
+  .tt-next:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(2,127,255,.42);}
+
+  /* team performance */
+  .team-link{margin-left:auto;font-size:12px;color:var(--accent-2);cursor:pointer;font-weight:500;}
+  .team-link:hover{text-decoration:underline;}
+  .teamrow{display:grid;grid-template-columns:1.5fr 2fr repeat(3,auto) auto;gap:18px;align-items:center;padding:14px 18px;border:1px solid var(--hair);border-radius:14px;margin-bottom:10px;background:var(--surface);box-shadow:var(--sh-sm);cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease),border-color .18s var(--ease);animation:cardIn .42s var(--ease) both;}
+  .teamrow:hover{transform:translateY(-2px);box-shadow:var(--sh);border-color:var(--accent);}
+  .tm-bar-wrap{display:flex;align-items:center;gap:10px;}
+  .tm-bar{height:9px;border-radius:6px;background:linear-gradient(90deg,#16C088,#0A9C66);min-width:4px;transition:width .5s var(--ease);}
+  .tm-bar-v{font-size:12.5px;font-weight:600;color:var(--gold);white-space:nowrap;}
+  .tm-stat{text-align:center;min-width:42px;}
+  .tm-stat .tm-n{font-weight:600;font-size:16px;line-height:1;}
+  .tm-stat .tm-k{font-size:9px;font-family:ui-monospace,monospace;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-top:4px;}
+  .tm-go{color:var(--faint);font-size:16px;}
+  .teamrow:hover .tm-go{color:var(--accent);}
+  /* ===== EMBEDDED IN FORCESIGHT USA — hide Money's own chrome ===== */
+  /* The parent app provides the sidebar + header, so we render only the
+     Money content area (impact ledger + content). */
+  .side{ display:none !important; }
+  .topbar{ display:none !important; }
+  /* channel icon chips (used in dashboard Channel column) */
+  .chcell{ display:inline-flex; align-items:center; gap:7px; }
+  .chic{ display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:4px; line-height:1; flex-shrink:0; overflow:hidden; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== SIDEBAR (ForceSight product chrome) ===== -->
+  <aside class="side" id="sidebar">
+    <div class="side-brand">
+      <div class="side-logo">FS</div>
+      <div class="brand-text"><div class="nm">ForceSight</div><div class="tg">Beyond the Obvious</div></div>
+    </div>
+
+    <div class="side-scroll">
+      <div class="nav-sec">Menu</div>
+
+      <div class="nav-item muted"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg><span class="label">Helix AI</span><span class="tip">Helix AI</span></div>
+      <div class="nav-item muted"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span class="label">Actions Required</span><span class="tip">Actions Required</span></div>
+
+      <!-- MONEY (active parent — the walkthrough nav lives here) -->
+      <div class="nav-item active" id="nav-money" onclick="toggleMoney(event)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="label">Money</span>
+        <svg class="nav-chevron open" id="moneyChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7"/></svg>
+        <span class="tip">Money</span>
+      </div>
+      <div class="submenu" id="moneySub">
+        <div class="nav-sec" style="padding:8px 12px 4px;">Daily</div>
+        <div class="sub-item active" id="nav-brief" onclick="go('brief')"><svg class="sic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg>The Brief</div>
+        <div class="sub-item" id="nav-tracking" onclick="go('tracking')"><svg class="sic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8M3 12a9 9 0 1018 0 9 9 0 00-18 0"/></svg>Tracking<span class="badge" id="trackBadge">5</span></div>
+        <div class="sub-item" id="nav-team" onclick="go('team')"><svg class="sic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Team performance</div>
+        <div class="nav-sec" style="padding:10px 12px 4px;">Deep dive</div>
+        <div class="sub-item" id="nav-dashboard" onclick="go('dashboard')"><svg class="sic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h7v7H4zM13 4h7v4h-7zM13 11h7v9h-7zM4 14h7v6H4z"/></svg>Analyst Dashboard</div>
+        <div class="sub-item" id="nav-reports" onclick="go('brief')"><svg class="sic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 14l4-4 3 3 5-6"/></svg>Reports</div>
+      </div>
+
+      <div class="nav-item muted"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg><span class="label">Ad Campaigns</span><span class="tip">Ad Campaigns</span></div>
+      <div class="nav-item muted"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg><span class="label">Reconcile</span><span class="tip">Reconcile</span></div>
+      <div class="nav-item muted"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg><span class="label">Plan Inventory</span><span class="tip">Plan Inventory</span></div>
+      <div class="nav-item muted"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg><span class="label">Settings</span><span class="tip">Settings</span></div>
+    </div>
+
+    <div class="side-foot">
+      <button class="collapse-btn" onclick="toggleSidebar()"><svg id="collapseArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg><span class="label">Collapse</span></button>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+    <!-- Global product top bar -->
+    <div class="topbar">
+      <div class="tb-left">
+        <div class="tb-crumb-main"><span class="pre">Money ›</span> <span id="tbTitle">The Brief</span></div>
+      </div>
+      <div class="tb-right">
+        <div class="tb-search"><input type="text" placeholder="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+        <span class="tour-btn" onclick="startTour()"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:6px;"><path d="M5 3l14 9-14 9V3z"/></svg>Guided tour</span>
+        <span class="tb-wa">● WhatsApp · brief pushed 7:30 AM</span>
+        <button class="tb-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg><span class="dot"></span></button>
+        <div class="tb-av">AN</div>
+      </div>
+    </div>
+
+    <!-- Impact ledger -->
+    <div class="metrics">
+      <div class="metric"><div class="mk">Today's impact</div><div class="mv"><span class="c">$</span><span id="mToday">0</span></div><div class="ms" id="mTodaySub">acted on today</div></div>
+      <div class="metric"><div class="mk">This quarter · verified</div><div class="mv"><span class="c">$</span><span id="mQtr">0</span></div><div class="ms">confirmed by your data</div></div>
+      <div class="metric fs"><div class="mk">ForceSight impact · lifetime</div><div class="mv"><span class="c">$</span><span id="mFs">0</span></div><div class="ms">delivered since onboarding</div></div>
+    </div>
+
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- Coach (intro walkthrough) -->
+<div class="coach-overlay" id="coach" style="display:none;">
+  <div class="coach-card">
+    <div class="ce">Quick tour</div>
+    <h3>How this works</h3>
+    <ol>
+      <li>The three numbers up top: <b>saved today</b>, <b>saved this quarter</b>, and <b>saved all-time</b> — what we've saved you. They go up as you act.</li>
+      <li><b>Click a decision</b> in the list (the one with the red border). See the proof, then pick what to do — each option shows how we'll check it worked.</li>
+      <li>We check it one of three ways: <b>your data confirms it</b>, <b>you attach proof</b>, or <b>you confirm it yourself</b> (for things we can't track) — always labelled clearly.</li>
+      <li>Open <b>Tracking</b> to see who's handling what and where it stands; use <b>Open in Dashboard</b> to see all the raw numbers.</li>
+    </ol>
+    <button class="cbtn" onclick="closeCoach()">Show my list</button>
+  </div>
+</div>
+
+<!-- Guided tour spotlight -->
+<div class="tour" id="tour">
+  <div class="tour-block"></div>
+  <div class="tour-hole" id="tHole"></div>
+  <div class="tour-tip" id="tTip">
+    <div class="tt-top"><span class="tt-num" id="tNum">1 / 10</span><span class="tt-exit" onclick="endTour()">Exit tour</span></div>
+    <div class="tt-title gk" id="tTitle"></div>
+    <div class="tt-body" id="tBody"></div>
+    <div class="tt-acts"><span class="tt-prev" id="tPrev" onclick="tourPrev()">&larr; Back</span><button class="tt-next" id="tNext" onclick="tourNext()">Next &rarr;</button></div>
+  </div>
+</div>
+
+<!-- Helix AI chat drawer -->
+<div class="helix-scrim" id="helixScrim" onclick="closeHelix()"></div>
+<aside class="helix-drawer" id="helixDrawer" aria-label="Ask Helix AI">
+  <div class="hx-head">
+    <div class="hx-orb"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
+    <div><div class="hx-nm">Helix AI</div><div class="hx-tg">Explains your numbers — never makes one up</div></div>
+    <button class="hx-close" onclick="closeHelix()">&times;</button>
+  </div>
+  <div class="hx-ctx" id="hxCtx">Context: <b>—</b></div>
+  <div class="hx-msgs" id="hxMsgs"></div>
+  <div class="hx-sugs" id="hxSugs"></div>
+  <div class="hx-input">
+    <input id="hxInput" placeholder="Ask Helix about this decision…" onkeydown="if(event.key==='Enter')sendHelix();">
+    <button class="hx-send" onclick="sendHelix()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+  </div>
+</aside>
+
+<script>
+/* ===== sidebar chrome (product) ===== */
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleMoney(e){ e.preventDefault();
+  var s=document.getElementById('sidebar');
+  if(s.classList.contains('collapsed')){ s.classList.remove('collapsed'); return; }
+  var sub=document.getElementById('moneySub');
+  var collapsed=sub.style.display==='none';
+  sub.style.display = collapsed?'block':'none';
+  document.getElementById('moneyChevron').classList.toggle('open', collapsed);
+}
+
+(function(){
+  var MARGIN=18497924;
+  function pct(n){ return (100*n/MARGIN).toFixed(1)+"% of margin"; }
+  var modName={profit:"Profit",ads:"Ads",inventory:"Inventory",recon:"Reconciliation"};
+  var catLabel={profit:"PROFIT",ads:"ADS",inventory:"INVENTORY",recon:"RECON"};
+  var tierMeta={
+    gold:{label:"Checked by your data",badge:"gold",icon:"&#10003;",tag:"auto-checked"},
+    silver:{label:"Proof attached",badge:"silver",icon:"&#9670;",tag:"has proof"},
+    bronze:{label:"You confirm it &middot; we can't track it",badge:"bronze",icon:"&#9678;",tag:"you confirm"}
+  };
+  var ops={
+    PN:{name:"Paula Nolan",role:"Finance",av:"PN",col:"#1E7A51"},
+    AR:{name:"Aaron Reyes",role:"Performance Mktg",av:"AR",col:"#5B4D9E"},
+    MI:{name:"Megan Ingram",role:"Inventory",av:"MI",col:"#996712"},
+    RC:{name:"Ryan Carter",role:"Commercial",av:"RC",col:"#0F6378"},
+    UN:{name:"Unassigned",role:"—",av:"—",col:"#9AA0A5"}
+  };
+
+  // ledger (US dollars) — callers prefix the "$" symbol, fmtL returns the number only
+  var todayImpact=0, qtrImpact=4820000, fsImpact=32000000;
+  function fmtL(n){ var s=n<0?"-":""; n=Math.abs(Math.round(n));
+    if(n>=1000000) return s+(n/1000000).toFixed(2).replace(/\.?0+$/,"")+"M";
+    if(n>=1000) return s+(n/1000).toFixed(1).replace(/\.0$/,"")+"K";
+    return s+n.toLocaleString("en-US"); }
+  function setMetric(id,v){ var e=document.getElementById(id); if(e) e.textContent=fmtL(v); }
+  /* ===== channel brand icons (USA market) ===== */
+  function chNorm(x){ x=(x||"").toLowerCase();
+    if(x.indexOf("walmart")>-1||x.indexOf("blinkit")>-1) return "walmart";
+    if(x.indexOf("amazon")>-1||x.indexOf("flipkart")>-1) return "amazon";
+    if(x.indexOf("target")>-1) return "target";
+    if(x.indexOf("shopify")>-1) return "shopify";
+    if(x.indexOf("ebay")>-1) return "ebay";
+    if(x.indexOf("facebook")>-1||x.indexOf("meta")>-1) return "facebook";
+    if(x.indexOf("instagram")>-1) return "instagram";
+    if(x.indexOf("tiktok")>-1) return "tiktok";
+    if(x.indexOf("etsy")>-1) return "etsy";
+    if(x.indexOf("google")>-1) return "google";
+    return "website"; }
+  var CHbg={amazon:"#232F3E",walmart:"#0071DC",shopify:"#5E8E3E",ebay:"#E53238",target:"#CC0000",
+    instagram:"linear-gradient(45deg,#F58529,#DD2A7B,#8134AF,#515BD4)",facebook:"#1877F2",tiktok:"#000000",
+    etsy:"#F1641E",google:"#4285F4",website:"#64748B"};
+  var CHletter={shopify:"S",ebay:"e",facebook:"f",etsy:"E",google:"G"};
+  var CHmark={
+    amazon:'<svg viewBox="0 0 24 24" width="72%" height="72%" fill="none"><path d="M4.5 15.5c4.3 3 10.7 3 15 0" stroke="#FF9900" stroke-width="1.8" stroke-linecap="round"/><path d="M17 14.7l2.4-.4-.5 2.4" stroke="#FF9900" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    walmart:'<svg viewBox="0 0 24 24" width="62%" height="62%"><g stroke="#FFC220" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="8.4"/><line x1="12" y1="15.6" x2="12" y2="21"/><line x1="4.2" y1="7.5" x2="8.9" y2="10.2"/><line x1="15.1" y1="13.8" x2="19.8" y2="16.5"/><line x1="4.2" y1="16.5" x2="8.9" y2="13.8"/><line x1="15.1" y1="10.2" x2="19.8" y2="7.5"/></g></svg>',
+    target:'<svg viewBox="0 0 24 24" width="72%" height="72%" fill="none"><circle cx="12" cy="12" r="7.2" stroke="#fff" stroke-width="2.4"/><circle cx="12" cy="12" r="2.6" fill="#fff"/></svg>',
+    instagram:'<svg viewBox="0 0 24 24" width="64%" height="64%" fill="none"><rect x="4.3" y="4.3" width="15.4" height="15.4" rx="4.6" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.7" stroke="#fff" stroke-width="2"/><circle cx="16.6" cy="7.4" r="1.15" fill="#fff"/></svg>',
+    tiktok:'<svg viewBox="0 0 24 24" width="58%" height="58%"><path d="M14.2 3.5c.35 2.3 1.9 3.75 4.1 3.95v2.55c-1.3 0-2.6-.4-3.7-1.1v5c0 2.85-2.2 4.9-4.85 4.9a4.85 4.85 0 0 1-.6-9.65v2.65a2.2 2.2 0 1 0 1.65 2.13V3.5z" fill="#fff"/></svg>',
+    website:'<svg viewBox="0 0 24 24" width="72%" height="72%" fill="none"><g stroke="#fff" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7.5"/><path d="M4.5 12h15M12 4.5c2.1 2.3 2.1 12.7 0 15M12 4.5c-2.1 2.3-2.1 12.7 0 15"/></g></svg>'
+  };
+  function chIcon(name){ var k=chNorm(name); var bg=CHbg[k]||CHbg.website;
+    var inner=CHmark[k]||('<span style="color:#fff;font-weight:800;font-size:9px;line-height:1;font-family:\'Outfit\',sans-serif">'+(CHletter[k]||"?")+'</span>');
+    return '<span class="chic" style="background:'+bg+'">'+inner+'</span>'; }
+  function animateNum(el,from,to,dur){ if(!el)return; var s=null;
+    function step(ts){ if(!s)s=ts; var t=Math.min((ts-s)/dur,1),e=1-Math.pow(1-t,3); el.textContent=fmtL(from+(to-from)*e); if(t<1)requestAnimationFrame(step); else el.textContent=fmtL(to);}
+    try{requestAnimationFrame(step);}catch(e){el.textContent=fmtL(to);} }
+
+  var probs=[
+    {id:"blinkit",rank:1,module:"profit",state:"losing",stateLabel:"Losing",owner:"PN",
+     title:"Top Walmart products are losing money",sub:"8 of your 10 biggest losses are on Walmart",oneThing:"Recommended to act on this first.",
+     amt:"$5.78M",amtNum:5780000,period:"/mo",conf:"high",status:"open",chosen:null,cAt:"2 Jul · 7:30 AM",cts:32,
+     proofHead:"Top Walmart products losing money",
+     proof:[["BL-SHEALTH-S-TOY-MASSAGEWAND","-$1.35M/mo"],["10195548","-$860K/mo"],["SW-404-MUTCL-CON","-$810K/mo"],["+ 5 more, all Walmart","-$2.76M/mo"]],
+     dash:{cols:["SKU","Channel","Ad spend","Units","Contribution"],rows:[["BL-SHEALTH-S-TOY-MASSAGEWAND","Walmart","$410K","1,240","-$1.35M"],["10195548","Walmart","$270K","980","-$860K"],["SW-404-MUTCL-CON","Walmart","$240K","760","-$810K"],["EXP-CON-THI-10","Walmart","$220K","690","-$770K"],["SW-404-EXDOT-CON","Walmart","$160K","540","-$550K"]]},
+     levers:[
+       {id:"ads",t:"Stop the ads",speed:"fast",tier:"gold",owner:"AR",impact:1800000,d:"Stop spending on Walmart ads for these products now.",impact_txt:"Stops about <b>$1.8M a month</b> of losses within 24 hours. You can undo it.",action:"Stop Walmart ad spend on 8 loss-making products",verS:"Walmart ad spend on all 8 products <b>stopped</b>; <b>$1.8M a month of losses stopped</b>, checked against your ad spend data."},
+       {id:"delist",t:"Remove from Walmart",speed:"hard to undo",tier:"gold",owner:"MI",impact:5780000,d:"Take these products off Walmart.",impact_txt:"Removes the full <b>$5.78M a month</b> loss, but you give up Walmart sales.",action:"Remove 8 loss-making products from Walmart",verS:"8 products <b>removed</b>; <b>$5.78M a month loss gone</b>, checked against your profit data."},
+       {id:"price",t:"Raise the price",speed:"needs check",tier:"gold",owner:"PN",impact:4000000,d:"Raise prices so these products stop losing money.",impact_txt:"Brings back profit on the sales you keep. First check the higher price won't scare off buyers.",action:"Raise prices on 8 products to stop the loss",verS:"Raised prices on 8 products; <b>6 of 8 now make a profit</b>, checked against your profit data."},
+       {id:"nego",t:"Renegotiate the deal",speed:"structural",tier:"bronze",owner:"RC",impact:5780000,d:"Push Walmart to lower their fees.",impact_txt:"Biggest long-term win &mdash; it fixes the real cause. Slow, and you need bargaining power.",action:"Start a fee review with Walmart",verS:"<b>Ryan is handling this directly with Walmart</b> &mdash; it happens outside our system, so he confirms it. We'll watch <b>Walmart profit for 60 days</b> and the data will confirm it if the fees drop."}
+     ]},
+    {id:"adbudget",rank:2,module:"ads",state:"losing",stateLabel:"Losing",owner:"AR",
+     title:"Ad money wasted on the wrong products",sub:"42 products spend on ads but get no sales · best ads are capped",
+     amt:"$430K",amtNum:430000,period:"/mo profit",metric:"≈ $5.16M/yr at risk",conf:"high",status:"open",chosen:null,cAt:"30 Jun · 7:30 AM",cts:30,
+     proofHead:"Ad spend — waste vs missed profit",
+     proof:[["42 products with ad spend but no sales","-$28K/mo"],["Girl's Vest — great returns, budget capped","+$270K/mo"],["3 good performers short on budget","+$160K/mo"]],
+     dash:{cols:["Campaign","Channel","Spend","ROAS","Action"],rows:[["Baby Clothing Set | KT","Amazon","$28K","0.0x","Pause 42 SKUs"],["Girl's Vest | KT","Amazon","$55.4K","6.7x","Scale +$40K"],["Ariel Boys Trunk | KT","Amazon","$236K","5.1x","Fund +$85K"],["RB Women's Pajamas | KT","Amazon","$158K","5.0x","Hold"]]},
+     levers:[
+       {id:"pause",t:"Stop the wasted ads",speed:"1-click",tier:"gold",owner:"AR",impact:336000,d:"Stop ads on 42 products that got no sales in 30 days.",impact_txt:"Saves <b>$28K a month</b> and you lose no sales.",action:"Stop ads on 42 products with no sales",verS:"42 products stopped; <b>$28K a month saved</b>, sales unchanged &mdash; checked against your ad spend data."},
+       {id:"reallocate",t:"Let AI rebalance the budget",speed:"best for profit",tier:"gold",owner:"AR",impact:4300000,d:"Move ad money from what's not working to what is.",impact_txt:"Adds <b>$430K a month in profit</b>: stop the waste and back the winners. Overall returns stay strong at 4.9x.",action:"Move ad budget to the products that sell best",verS:"New plan applied; <b>$430K a month more profit</b> confirmed, overall returns 4.9x &mdash; checked against your sales data."},
+       {id:"scale",t:"Back the winners only",speed:"fast",tier:"gold",owner:"AR",impact:4100000,d:"Give more budget to Girl's Vest and 3 other strong products.",impact_txt:"Gains <b>$430K a month</b> without changing the rest.",action:"Add budget to Girl's Vest and 3 other strong products",verS:"Budgets raised; <b>$410K a month more in sales</b>, returns stayed above 5x &mdash; confirmed."}
+     ]},
+    {id:"aged",rank:3,module:"inventory",state:"trapped",stateLabel:"Stuck",owner:"MI",
+     title:"Cash stuck in slow-selling stock",sub:"$4.2M tied up · sitting 48 days · restock needs approval",
+     amt:"$4.2M",amtNum:4200000,period:"tied up",metric:"sitting 48 days · cash tied up",conf:"high",status:"open",chosen:null,cAt:"24 Jun · 7:30 AM",cts:24,
+     proofHead:"Slow-selling stock + restock decision",
+     proof:[["Slow sellers — over 90 days of stock left","$2.6M tied up"],["Not sold in 60 days","$800K tied up"],["Restock plan (Black Friday)","spend $3.8M"]],
+     stats:[["Cash tied up","$4.2M"],["Days sitting","48 d"],["Chance of running out","8%"],["Sales it covers","$12M"]],
+     dash:{cols:["SKU","Warehouse","In hand","DOI","Locked value"],rows:[["Slow-mover A","South DC","12,400","112 d","$1.4M"],["Slow-mover B","South DC","8,900","98 d","$1.2M"],["Dead stock C","South DC","2,900","180+ d","$800K"],["Excess D","West DC","6,100","96 d","$800K"]]},
+     levers:[
+       {id:"approve",t:"Approve the restock",speed:"spends cash",tier:"silver",owner:"MI",impact:600000,d:"Spend $3.8M to have enough stock for Black Friday.",impact_txt:"Spends <b>$3.8M</b> to protect <b>$12M</b> in sales. This is within your safe spending range.",action:"Approve Black Friday restock; spend $3.8M",verS:"<b>Order PO-2026-014 placed, $3.8M approved.</b> On track to cover $12M in sales; chance of running out drops 8% &rarr; 3% (protecting about $600K profit)."},
+       {id:"liquidate",t:"Sell off the slow stock",speed:"lowers profit",tier:"gold",owner:"MI",impact:3400000,d:"Clear slow and unsold stock to get cash back.",impact_txt:"Gets back <b>$3.4M</b> of the $4.2M tied up, but at a lower profit.",action:"Run a clearance sale on slow and unsold South warehouse stock",verS:"Clearance running; <b>$3.4M freed up</b>, checked against your stock data. Days sitting dropped 48 &rarr; 31."},
+       {id:"hold",t:"Do nothing, keep the cash",speed:"can undo",tier:"bronze",owner:"MI",impact:0,d:"Order less and keep the cash for now.",impact_txt:"Keeps cash free but raises the chance of running out. You can undo it.",action:"Order less stock; keep an eye on running out",verS:"<b>Confirmed by you</b> &mdash; a judgment call we can't track. We'll check <b>the chance of running out every week</b> and flag it if it gets too high."}
+     ]}
+  ];
+  // in-flight + history (for tracking + brief)
+  var seeded=[
+    {id:"recon",module:"recon",owner:"PN",title:"Marketplaces paid you less than agreed",amt:"$1.42M",action:"File a claim for 312 underpaid orders",tier:"gold",stage:"verifying",impact:1420000,cAt:"27 Jun · 8:00 AM",cts:27,aAt:"1 Jul · 11:20 AM",when:"Filed 2 days ago",outcome:"Claim filed for 312 orders where the marketplace paid less than your agreed rate. Waiting for them to process it.",proof:[["Underpaid orders","312"],["Amount claimed","$1.42M"],["Marketplace","Amazon + Target"]]},
+    {id:"returns",module:"recon",owner:"PN",title:"Refunds you were never paid back",amt:"$420K",action:"File a claim for returns you weren't refunded",tier:"gold",stage:"verified",impact:420000,cAt:"18 Jun · 7:30 AM",cts:18,aAt:"20 Jun · 10:00 AM",rAt:"27 Jun · 4:30 PM",when:"Closed this quarter",outcome:"Filed a claim for returns that were never credited back. $420K recovered, checked against your settlement data.",proof:[["Returns not credited","148"],["Amount recovered","$420K"]]},
+    {id:"fee_hist",module:"profit",owner:"AR",title:"Capped overspend on Facebook ads",amt:"$610K",action:"Cap Facebook ad spend on overused audiences",tier:"silver",stage:"evidence",impact:610000,cAt:"15 Jun · 9:15 AM",cts:15,aAt:"17 Jun · 1:20 PM",rAt:"24 Jun · 5:10 PM",when:"Closed this quarter",outcome:"Capped spend on audiences that were being shown ads too often. $610K a month saved; spend report attached as proof.",proof:[["Audiences capped","7"],["Monthly saving","$610K"]]},
+    {id:"tds",module:"recon",owner:"PN",title:"Wrong tax deducted on payouts",amt:"$280K",action:"File a tax correction with 3 marketplaces",tier:"silver",stage:"verifying",impact:280000,cAt:"28 Jun · 9:10 AM",cts:28,aAt:"1 Jul · 2:05 PM",when:"Filed 2 days ago",outcome:"Correction filed with 3 marketplaces for tax deducted above the correct amount. Waiting on their confirmation.",proof:[["Amazon over-deduction","$160K"],["Target over-deduction","$70K"],["Others","$50K"]]},
+    {id:"latefee",module:"recon",owner:"PN",title:"Recovered late-payment penalty",amt:"$190K",action:"Raise a claim for late settlement charges",tier:"gold",stage:"verified",impact:190000,cAt:"16 Jun · 8:40 AM",cts:16,aAt:"19 Jun · 11:00 AM",rAt:"26 Jun · 3:15 PM",when:"Closed this quarter",outcome:"Claimed charges for settlements that arrived late. $190K credited back, checked against your settlement data.",proof:[["Delayed settlements","41"],["Amount recovered","$190K"]]},
+    {id:"dupfee",module:"recon",owner:"RC",title:"Refunded double-charged platform fees",amt:"$340K",action:"Dispute duplicate fee charges with proof",tier:"silver",stage:"evidence",impact:340000,cAt:"26 Jun · 10:05 AM",cts:26,aAt:"29 Jun · 12:30 PM",rAt:"1 Jul · 9:45 AM",when:"Filed 4 days ago",outcome:"Found fees charged twice and disputed them with line-by-line proof. Refund expected next cycle.",proof:[["Duplicate fee lines","96"],["Amount disputed","$340K"]]},
+    {id:"amz_reprice",module:"profit",owner:"PN",title:"Raised prices on loss-making products",amt:"$520K",action:"Raise prices on 12 products selling below cost",tier:"gold",stage:"verified",impact:520000,cAt:"12 Jun · 7:30 AM",cts:12,aAt:"14 Jun · 10:20 AM",rAt:"22 Jun · 2:40 PM",when:"Closed this quarter",outcome:"Raised prices on 12 products that sold for less than they cost. 10 now make a profit, checked against your profit data.",proof:[["Products repriced","12"],["Now profitable","10 of 12"],["Monthly loss removed","$520K"]]},
+    {id:"return_size",module:"profit",owner:"MI",title:"Cutting returns on high-return products",amt:"$230K",action:"Fix sizing info on 6 products with high returns",tier:"silver",stage:"inprogress",impact:230000,cAt:"25 Jun · 7:30 AM",cts:25,aAt:"28 Jun · 12:40 PM",when:"Started 5 days ago",outcome:"Updated the size charts on 6 products that were returned a lot. Watching return rates over the next 30 days.",proof:[["Products fixed","6"],["Return rate before","14%"]]},
+    {id:"cod",module:"profit",owner:"PN",title:"Turned off COD on returned products",amt:"$160K",action:"Turn off cash-on-delivery for 9 high-return products",tier:"gold",stage:"verified",impact:160000,cAt:"10 Jun · 8:10 AM",cts:10,aAt:"12 Jun · 9:30 AM",rAt:"20 Jun · 4:00 PM",when:"Closed this quarter",outcome:"Turned off cash-on-delivery for 9 products that were returned often. Returns dropped, checked against your order data.",proof:[["Products changed","9"],["Returns avoided a month","$160K"]]},
+    {id:"promo",module:"profit",owner:"AR",title:"Stopped promos that lost money",amt:"$310K",action:"End 4 promotions that gave away more than they earned",tier:"gold",stage:"verified",impact:310000,cAt:"14 Jun · 7:30 AM",cts:14,aAt:"16 Jun · 11:10 AM",rAt:"23 Jun · 1:50 PM",when:"Closed this quarter",outcome:"Ended 4 promotions that cost more than they brought in. $310K a month saved, checked against your sales data.",proof:[["Promos ended","4"],["Monthly saving","$310K"]]},
+    {id:"meta_scale",module:"ads",owner:"AR",title:"Scaled up the winning ad campaigns",amt:"$480K",action:"Add budget to 5 campaigns beating target",tier:"gold",stage:"verifying",impact:480000,cAt:"1 Jul · 7:30 AM",cts:31,aAt:"2 Jul · 10:15 AM",when:"Started yesterday",outcome:"Added budget to 5 campaigns doing better than target. Waiting on a full week of sales data to confirm.",proof:[["Campaigns scaled","5"],["Extra sales a month (est.)","$480K"]]},
+    {id:"acos",module:"ads",owner:"AR",title:"Cut ad spend that was losing money",amt:"$220K",action:"Lower bids on 18 campaigns spending too much",tier:"gold",stage:"verified",impact:220000,cAt:"13 Jun · 8:25 AM",cts:13,aAt:"15 Jun · 10:45 AM",rAt:"21 Jun · 3:20 PM",when:"Closed this quarter",outcome:"Lowered bids on 18 campaigns that were spending more than they earned. Back to profit, checked against your sales data.",proof:[["Campaigns fixed","18"],["Monthly saving","$220K"]]},
+    {id:"channel_shift",module:"ads",owner:"AR",title:"Moved ad budget to the better channel",amt:"$140K",action:"Shift 15% of budget from Facebook to Amazon ads",tier:"silver",stage:"inprogress",impact:140000,cAt:"27 Jun · 7:30 AM",cts:27,aAt:"30 Jun · 9:50 AM",when:"Started 3 days ago",outcome:"Moved 15% of the budget to the channel that earns more. Comparing results across channels for 2 weeks.",proof:[["Budget moved","15%"],["Better channel","Amazon"]]},
+    {id:"deadstock",module:"inventory",owner:"MI",title:"Cleared stock that wasn't selling",amt:"$750K",action:"Run a clearance sale on stock unsold for 90+ days",tier:"gold",stage:"verified",impact:750000,cAt:"8 Jun · 7:30 AM",cts:8,aAt:"11 Jun · 10:00 AM",rAt:"19 Jun · 5:30 PM",when:"Closed this quarter",outcome:"Ran a clearance sale on stock that hadn't sold in over 90 days. $750K in cash freed up, checked against your stock data.",proof:[["Cash freed","$750K"],["Units cleared","3,200"]]},
+    {id:"transfer",module:"inventory",owner:"MI",title:"Moved stock to where it sells",amt:"$260K",action:"Transfer stock from West to South warehouse",tier:"silver",stage:"evidence",impact:260000,cAt:"24 Jun · 9:00 AM",cts:24,aAt:"27 Jun · 11:40 AM",rAt:"29 Jun · 4:10 PM",when:"Done 6 days ago",outcome:"Moved stock from a warehouse where it sat to one where it sells. Freight receipt attached as proof.",proof:[["Units moved","1,900"],["Stockouts avoided","$260K"]]},
+    {id:"restock_hero",module:"inventory",owner:"MI",title:"Restocked products about to run out",amt:"$390K",action:"Fast-track restock on 7 best-selling products",tier:"gold",stage:"verified",impact:390000,cAt:"9 Jun · 7:30 AM",cts:9,aAt:"11 Jun · 9:15 AM",rAt:"18 Jun · 2:00 PM",when:"Closed this quarter",outcome:"Restocked 7 best-sellers before they ran out. Sales protected, checked against your sales data.",proof:[["Products restocked","7"],["Sales protected a month","$390K"]]},
+    {id:"fee_nego",module:"profit",owner:"RC",title:"Renegotiated marketplace fees",amt:"$900K",action:"Agree a lower category fee with a marketplace",tier:"bronze",stage:"watching",impact:900000,cAt:"20 Jun · 10:30 AM",cts:20,aAt:"23 Jun · 3:00 PM",rAt:"Watching · confirms by ~22 Aug",when:"Watching for 60 days",outcome:"Ryan agreed a lower fee directly with the marketplace. It happens outside our system, so we're watching your profit for 60 days to confirm it.",proof:[["Fee before","18%"],["New fee","15%"],["Expected saving a month","$900K"]]}
+  ];
+
+  var current="brief", drillId=null, chosenLever=null, evidenceAttached=false;
+
+  function setHeader(t,c){ var a=document.getElementById("tbTitle"); if(a) a.textContent=t; var b=document.getElementById("tbCrumb"); if(b) b.innerHTML=c; }
+  function setNav(id){ ["brief","tracking","team","dashboard"].forEach(function(n){ var e=document.getElementById("nav-"+n); if(e) e.classList.toggle("active", n===id); });
+    var r=document.getElementById("nav-reports"); if(r) r.classList.remove("active"); }
+  function leverObj(p){ return p.chosen?p.levers.filter(function(l){return l.id===p.chosen;})[0]:null; }
+  function swap(fn){ var c=document.getElementById("content"); c.classList.add("swapping");
+    setTimeout(function(){ fn(); c.classList.remove("swapping"); c.scrollTop=0; },190); }
+
+  window.go=function(v){
+    if(v==="brief"){ current="brief"; setNav("brief"); setHeader("The Brief","Good morning, Jordan · your money, today"); swap(renderBrief); }
+    else if(v==="tracking"){ current="tracking"; setNav("tracking"); setHeader("Tracking","Who owns what · and where each decision is in verification"); swap(renderTracking); }
+    else if(v==="team"){ current="team"; setNav("team"); setHeader("Team performance","How your team is performing · tap anyone to drill in"); swap(renderTeam); }
+    else if(v==="dashboard"){ current="dashboard"; setNav("dashboard"); setHeader("Analyst Dashboard","The deep view — raw lines, traceable to source"); swap(function(){renderDashboard(null);}); }
+  };
+
+  /* ===== BRIEF ===== */
+  function statusTrack(stage){
+    function st(c,l,on,sp){return '<span class="st '+c+(on?" on":"")+'"><span class="sd"></span>'+(sp&&on?'<span class="spin">&#8635;</span> ':'')+l+'</span>';}
+    if(stage==="verifying") return '<div class="statline">'+st("s-a","Done",true)+'<span class="stsep">&rarr;</span>'+st("s-v","Checking your data",true,true)+'<span class="stsep">&rarr;</span>'+st("s-d","Confirmed",false)+'</div>';
+    if(stage==="verified") return '<div class="statline">'+st("s-a","Done",true)+'<span class="stsep">&rarr;</span>'+st("s-d","Confirmed",true)+'</div>';
+    if(stage==="evidence") return '<div class="statline">'+st("s-a","Done",true)+'<span class="stsep">&rarr;</span>'+st("s-d","Proof attached",true)+'</div>';
+    if(stage==="watching") return '<div class="statline">'+st("s-a","Done",true)+'<span class="stsep">&rarr;</span>'+st("s-v","Watching",true)+'</div>';
+    if(stage==="inprogress") return '<div class="statline">'+st("s-a","Done",true)+'<span class="stsep">&rarr;</span>'+st("s-v","In progress",true)+'</div>';
+    return "";
+  }
+  var issueMap={
+    recon:"Marketplaces underpaid you vs your agreed rate", returns:"Returns you were never refunded for",
+    fee_hist:"Overspending on Facebook ads", tds:"Wrong tax deducted on your payouts",
+    latefee:"Marketplace paid you late", dupfee:"Platform fees charged twice",
+    amz_reprice:"Products selling below what they cost", return_size:"High returns eating your margin",
+    cod:"COD orders driving heavy returns", promo:"Promotions costing more than they earned",
+    meta_scale:"Your best ads were capped by budget", acos:"Ads spending more than they earned",
+    channel_shift:"Ad budget stuck on the weaker channel", deadstock:"Stock not selling, cash locked in it",
+    transfer:"Stock stranded in the wrong warehouse", restock_hero:"Best-sellers about to run out",
+    fee_nego:"Marketplace fees too high"
+  };
+  function impactBits(stage,module,amt){
+    if(stage==="verified"||stage==="evidence") return {color:"var(--gold)",txt:"+"+amt,sub:(module==="recon"?"recovered":"saved")};
+    if(stage==="watching") return {color:"var(--bronze)",txt:amt,sub:"expected"};
+    return {color:"var(--accent-2)",txt:amt,sub:"being checked"};
+  }
+  function resolvedCard(p){ var lv=leverObj(p); var tm=tierMeta[lv.tier];
+    var ev = lv.tier==="silver" ? '<span class="evchip">&#128206; PO-2026-014.pdf</span>' : '';
+    var tl=itemTime([["Created",p.cAt||"—"],["Resolved","just now"]]);
+    var stg=(p.status==="watching")?"watching":"verified";
+    var ib=impactBits(stg,p.module,(lv.impact>0?"$"+fmtL(lv.impact):p.amt));
+    return '<div class="track clickable" onclick="openProblem(\''+p.id+'\')">'
+      +'<div class="tk-main"><div class="tk-ttl">'+p.title+' <span class="cat '+p.module+'">'+catLabel[p.module]+'</span></div>'
+      +'<div class="tk-sol"><span class="tk-fix">Fix:</span> '+lv.action+'</div>'
+      +'<div class="outcome"><div class="otop"><span class="vbadge '+tm.badge+'">'+tm.icon+' '+tm.label+'</span>'+ev+'</div>'+lv.verS+'</div>'+tl+'</div>'
+      +'<div class="tk-right"><div class="tk-amt" style="color:'+ib.color+'">'+ib.txt+'</div><div class="tk-imp-sub">'+ib.sub+'</div><span class="track-go">View details &rarr;</span></div></div>'; }
+  function seededCard(s){ var tm=tierMeta[s.tier];
+    var isMotion=(s.stage==="verifying"||s.stage==="inprogress");
+    var body = isMotion ? statusTrack(s.stage)
+      : '<div class="outcome"><div class="otop"><span class="vbadge '+tm.badge+'">'+tm.icon+' '+tm.label+'</span></div></div>';
+    var parts=[["Created",s.cAt||"—"]];
+    if(s.aAt) parts.push(["Action taken",s.aAt]);
+    if(!isMotion && s.rAt) parts.push([s.stage==="watching"?"Status":"Resolved",s.rAt]);
+    var ib=impactBits(s.stage,s.module,s.amt);
+    return '<div class="track clickable" onclick="openResolved(\''+s.id+'\',\'brief\')">'
+      +'<div class="tk-main"><div class="tk-ttl">'+(issueMap[s.id]||s.title)+' <span class="cat '+s.module+'">'+catLabel[s.module]+'</span></div>'
+      +'<div class="tk-sol"><span class="tk-fix">Fix:</span> '+s.action+'</div>'+body+itemTime(parts)+'</div>'
+      +'<div class="tk-right"><div class="tk-amt" style="color:'+ib.color+'">'+ib.txt+'</div><div class="tk-imp-sub">'+ib.sub+'</div><span class="track-go">View details &rarr;</span></div></div>'; }
+
+  function probCard(p,i){ var col=p.state==="owed"?"var(--gold)":p.state==="trapped"?"var(--bronze)":"var(--leak)";
+    var badge = p.oneThing ? ' <span class="one-badge">&#9733; THE ONE THING<span class="one-tip">'+p.oneThing+'</span></span>' : '';
+    return '<div class="prob'+(p.oneThing?' live-ring':'')+'" style="animation-delay:'+(i*60)+'ms"><span class="rk">'+(i+1)+'</span>'
+      +'<div class="mid" onclick="openProblem(\''+p.id+'\')"><div class="ttl">'+p.title+badge+'</div>'
+      +'<div class="sub"><span class="pill '+p.state+'">'+p.stateLabel+'</span><span class="cat '+p.module+'">'+catLabel[p.module]+'</span> '+p.sub+'</div>'+(p.cAt?itemTime([["Created",p.cAt]]):'')+'</div>'
+      +'<div class="right"><div class="amt">'+p.amt+' <span style="font-size:10px;color:var(--muted);font-weight:400">'+p.period+'</span></div>'
+      +'<div class="pct" style="color:'+col+'">'+(p.metric||pct(p.amtNum))+'</div>'
+      +'<div class="pacts"><span class="prob-menu"><button class="pm-btn" onclick="event.stopPropagation();toggleProbMenu(\''+p.id+'\')" title="More" aria-label="More"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button><div class="pm-pop" id="pm-'+p.id+'"><button class="pm-item" onclick="event.stopPropagation();dismissProblem(\''+p.id+'\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Dismiss suggestion</button></div></span><button class="pa-ghost" onclick="event.stopPropagation();openDash(\''+p.id+'\')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h7v7H4zM13 4h7v4h-7zM13 11h7v9h-7zM4 14h7v6H4z"/></svg>Dashboard</button><button class="pa-btn" onclick="event.stopPropagation();openProblem(\''+p.id+'\')">Decide &rarr;</button></div></div></div>';
+  }
+  function dismissedCard(p){
+    return '<div class="track dm-card"><label class="dm-check"><input type="checkbox" class="dm-cb" value="'+p.id+'" onchange="updateDmBar()"></label>'
+      +'<div class="tk-main"><div class="tk-ttl">'+p.title+' <span class="cat '+p.module+'">'+catLabel[p.module]+'</span></div>'
+      +'<div class="tk-sol">'+p.sub+'</div>'+(p.cAt?itemTime([["Created",p.cAt]]):'')+'</div>'
+      +'<div class="tk-right"><div class="tk-amt" style="color:var(--muted)">'+p.amt+'</div><div class="tk-imp-sub">was at risk</div></div></div>'; }
+  function dmSelected(){ var ns=document.querySelectorAll(".dm-cb:checked"); var a=[]; for(var i=0;i<ns.length;i++) a.push(ns[i].value); return a; }
+  window.toggleProbMenu=function(id){ var el=document.getElementById("pm-"+id); var was=el&&el.classList.contains("open"); var op=document.querySelectorAll(".pm-pop.open"); for(var i=0;i<op.length;i++) op[i].classList.remove("open"); if(el&&!was) el.classList.add("open"); };
+  document.addEventListener("click",function(){ var op=document.querySelectorAll(".pm-pop.open"); for(var i=0;i<op.length;i++) op[i].classList.remove("open"); });
+  window.dismissProblem=function(id){ var p=probs.filter(function(x){return x.id===id;})[0]; if(p) p.status="dismissed"; renderBrief(); };
+  window.updateDmBar=function(){ var n=document.querySelectorAll(".dm-cb:checked").length; var c=document.getElementById("dmCount"); if(c) c.textContent=n+(n===1?" selected":" selected"); var rb=document.getElementById("dmRestore"),db=document.getElementById("dmDelete"); if(rb) rb.disabled=(n===0); if(db) db.disabled=(n===0); var all=document.getElementById("dmAll"); if(all){ var total=document.querySelectorAll(".dm-cb").length; all.checked=(total>0&&n===total); } };
+  window.dmToggleAll=function(on){ var ns=document.querySelectorAll(".dm-cb"); for(var i=0;i<ns.length;i++) ns[i].checked=on; updateDmBar(); };
+  window.restoreSelected=function(){ var ids=dmSelected(); if(!ids.length)return; ids.forEach(function(id){ var p=probs.filter(function(x){return x.id===id;})[0]; if(p) p.status="open"; }); window._briefTab="need"; renderBrief(); };
+  window.deleteSelected=function(){ var ids=dmSelected(); if(!ids.length)return; ids.forEach(function(id){ var p=probs.filter(function(x){return x.id===id;})[0]; if(p) p.status="deleted"; }); window._briefTab="dismissed"; renderBrief(); };
+  function briefEmpty(msg){ return '<div class="brief-empty">'+msg+'</div>'; }
+  var CLOCK='<svg class="clk" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l2.6 1.6"/></svg>';
+  function itemTime(parts){ return '<div class="item-time">'+CLOCK+parts.map(function(p){return '<span class="it-seg"><span class="it-k">'+p[0]+'</span> '+p[1]+'</span>';}).join('<span class="it-dot">&middot;</span>')+'</div>'; }
+  function sortBar(){ var s=window._briefSort||'risk';
+    function opt(v,l){ return '<option value="'+v+'"'+(v===s?' selected':'')+'>'+l+'</option>'; }
+    return '<div class="sortbar"><span class="sb-lbl">Sort by</span><span class="sb-sel-wrap"><select class="sortsel" onchange="setBriefSort(this.value)">'
+      +opt('risk','Money at risk')+opt('newest','Newest first')+opt('oldest','Oldest first')+opt('type','Type')
+      +'</select><svg class="sb-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></div>'; }
+  window.setBriefSort=function(v){ window._briefSort=v; renderBrief(); };
+  function sortBrief(arr,amtKey){ var s=window._briefSort||'risk'; var a=arr.slice(); var mo={profit:0,ads:1,inventory:2,recon:3};
+    if(s==='newest') a.sort(function(x,y){return (y.cts||0)-(x.cts||0);});
+    else if(s==='oldest') a.sort(function(x,y){return (x.cts||0)-(y.cts||0);});
+    else if(s==='type') a.sort(function(x,y){return ((mo[x.module]||0)-(mo[y.module]||0))||((y[amtKey]||0)-(x[amtKey]||0));});
+    else a.sort(function(x,y){return (y[amtKey]||0)-(x[amtKey]||0);});
+    return a; }
+  window.briefTab=function(t){ window._briefTab=t;
+    ["need","motion","resolved","dismissed"].forEach(function(n){ var pane=document.getElementById("bt-"+n); if(pane) pane.classList.toggle("on",n===t); var tab=document.getElementById("btab-"+n); if(tab) tab.classList.toggle("active",n===t); });
+    clearPulse();
+  };
+  function renderBrief(){
+    setGuide(1,"You're <b>Jordan, CFO</b>. Three impact numbers up top. <b>Tap a decision</b> — watch them move. Open in Dashboard to dig deeper.");
+    var openP=probs.filter(function(p){return p.status==="open";});
+    var resolvedP=probs.filter(function(p){return p.status==="verified"||p.status==="watching";});
+    var dismissedP=probs.filter(function(p){return p.status==="dismissed";});
+    var motion=seeded.filter(function(s){return s.stage==="verifying"||s.stage==="inprogress";});
+    var done=seeded.filter(function(s){return s.stage!=="verifying"&&s.stage!=="inprogress";});
+    var resCount=resolvedP.length+done.length;
+    openP=sortBrief(openP,'amtNum'); motion=sortBrief(motion,'impact');
+    var resItems=resolvedP.map(function(p){return {kind:'prob',data:p,cts:p.cts||0,amtNum:p.amtNum||0,module:p.module};})
+      .concat(done.map(function(s){return {kind:'seed',data:s,cts:s.cts||0,amtNum:s.impact||0,module:s.module};}));
+    resItems=sortBrief(resItems,'amtNum');
+    var needHtml = openP.length ? sortBar()+openP.map(probCard).join("") : briefEmpty("Nothing needs you right now — you're all clear for today. ✓");
+    var motionHtml = motion.length ? sortBar()+motion.map(seededCard).join("") : briefEmpty("Nothing in progress. Decisions you approve show up here while we confirm them.");
+    var resHtml = resCount ? sortBar()+resItems.map(function(it){return it.kind==='prob'?resolvedCard(it.data):seededCard(it.data);}).join("") : briefEmpty("Nothing finished this quarter yet.");
+    var dismissedHtml = dismissedP.length
+      ? '<div class="dm-bar"><label class="dm-all"><input type="checkbox" id="dmAll" onchange="dmToggleAll(this.checked)"> Select all</label><span class="dm-count" id="dmCount">0 selected</span><span class="dm-actions"><button class="dm-btn" id="dmRestore" disabled onclick="restoreSelected()">&#8617; Put back to Need action</button><button class="dm-btn danger" id="dmDelete" disabled onclick="deleteSelected()">&#10005; Delete</button></span></div>'+dismissedP.map(dismissedCard).join("")
+      : briefEmpty("No dismissed suggestions. When you set one aside from Need action, it lands here — put it back or delete it anytime.");
+    function btab(id,label,count){ return '<div class="modtab" id="btab-'+id+'" onclick="briefTab(\''+id+'\')">'+label+'<span class="ct">'+count+'</span></div>'; }
+    var h='<div class="wrap">'
+    +'<div class="modtabs">'+btab("need","Need action",openP.length)+btab("motion","In motion",motion.length)+btab("resolved","Resolved",resCount)+btab("dismissed","Dismissed",dismissedP.length)+'</div>'
+    +'<div class="brief-tab" id="bt-need">'+needHtml+'</div>'
+    +'<div class="brief-tab" id="bt-motion">'+motionHtml+'</div>'
+    +'<div class="brief-tab" id="bt-resolved">'+resHtml+'</div>'
+    +'<div class="brief-tab" id="bt-dismissed">'+dismissedHtml+'</div>'
+    +'<p class="floor-note">Smaller items that aren\'t worth your time stay in the Analyst Dashboard. Every decision is labelled, tracked, and checked one of three ways &mdash; we never show a made-up number.</p></div>';
+    document.getElementById("content").innerHTML=h;
+    refreshMetrics(); updateTrackBadge();
+    window.briefTab(window._briefTab||"need");
+  }
+
+  /* ===== DRILL ===== */
+  window.openProblem=function(id){ drillId=id; chosenLever=null; evidenceAttached=false; current="drill"; setNav("brief"); setHeader("Decision","The Brief › "+modName[probs.filter(function(x){return x.id===id;})[0].module]); swap(renderDrill); };
+  window.openDash=function(id){ drillId=id; current="dashboard"; setNav("dashboard"); var p=probs.filter(function(x){return x.id===id;})[0]; setHeader("Analyst Dashboard",'The Brief › '+p.title); swap(function(){renderDashboard(id);}); };
+  function moduleCounts(){ var c={profit:0,ads:0,inventory:0,recon:0}; probs.forEach(function(p){c[p.module]++;}); c.recon=1; return c; }
+  window.switchModule=function(m){ var p=probs.filter(function(x){return x.module===m;})[0]; if(p){drillId=p.id;chosenLever=null;evidenceAttached=false;swap(renderDrill);} };
+
+  function renderDrill(){
+    setGuide(2,"Each lever shows its <b>verification tier</b> — data, evidence, or attested. Pick one, then Approve. Need depth? <b>Open in Dashboard</b>.");
+    var p=probs.filter(function(x){return x.id===drillId;})[0]; var c=moduleCounts();
+    var tabs=Object.keys(modName).map(function(m){return '<div class="modtab '+(m===p.module?"active":"")+'" onclick="switchModule(\''+m+'\')">'+modName[m]+'<span class="ct">'+c[m]+'</span></div>';}).join("");
+    var confTxt=p.conf==="high"?"we're confident":"worth a check",confCol=p.conf==="high"?"var(--gold)":"var(--bronze)";
+    var statHtml=p.stats?'<div class="capstrip">'+p.stats.map(function(s){return '<div class="capcell"><div class="ck">'+s[0]+'</div><div class="cv">'+s[1]+'</div></div>';}).join("")+'</div>':'';
+    var h='<div class="wrap"><span class="back" onclick="go(\'brief\')">&larr; Back to brief</span><div class="modtabs">'+tabs+'</div>'
+    +'<div class="dd-top"><div class="dd-head"><h2>'+p.title+'</h2><div class="dd-meta"><span class="pill '+p.state+'">'+p.stateLabel+'</span><span class="cat '+p.module+'">'+catLabel[p.module]+'</span>'
+    +'<span class="amt">'+p.amt+'</span> <span>'+p.period+'</span><span>&middot; '+(p.metric||pct(p.amtNum))+'</span><span class="conf" style="color:'+confCol+'">&#9679; '+confTxt+'</span></div></div>'
+    +'<button class="btn btn-ghost" onclick="openDash(\''+p.id+'\')">&#9683; Open in Dashboard</button></div>'
+    +'<div class="proof"><div class="ph"><span>'+p.proofHead+'</span><span class="trace" onclick="openDash(\''+p.id+'\')">see the data &rarr;</span></div>'
+    +p.proof.map(function(r){var neg=String(r[1]).indexOf("-")===0;return '<div class="proof-row"><span>'+r[0]+'</span><span class="pv" style="color:'+(neg?"var(--leak)":"var(--ink-2)")+'">'+r[1]+'</span></div>';}).join("")+'</div>'
+    +statHtml+'<div id="decArea"></div></div>';
+    document.getElementById("content").innerHTML=h; renderDecision(p);
+  }
+  function renderDecision(p){
+    if(p.status!=="open"){ var _d=p.custom?p.custom.action:(leverObj(p)?leverObj(p).t:"this decision"); document.getElementById("decArea").innerHTML='<div class="route show"><div class="rh">Already decided</div><div class="impact">You chose <b>'+_d+'</b>. You can see it in Tracking.</div><button class="btn btn-primary" onclick="go(\'brief\')">Back to brief &rarr;</button></div>'; return; }
+    var h='<div class="dec-h">Pick what to do</div><div class="dec-sub">Each option shows how we\'ll check it worked &mdash; so the savings are real, not just a tick-box.</div>'
+    +'<div class="levers" id="levers">'+p.levers.map(function(l){ var o=ops[l.owner];
+      return '<div class="lever" data-id="'+l.id+'" onclick="selectLever(\''+l.id+'\')"><div class="lt"><span>'+l.t+'</span> <span class="vtier '+l.tier+'">'+tierMeta[l.tier].tag+'</span></div><div class="ld">'+l.d+'</div>'
+      +'<div class="lf-row"><span class="lf"><span class="av" style="width:18px;height:18px;font-size:8px;background:'+o.col+'">'+o.av+'</span>'+o.name.split(" ")[0]+' · '+o.role+'</span>'
+      +'<button class="lever-helix" onclick="event.stopPropagation();openHelix(\''+l.id+'\')"><svg class="chat-ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Ask Helix AI</button></div></div>';
+    }).join("")+'</div>'
+    +'<div class="addrow" id="addrow"><span class="addbtn" onclick="toggleCustom()">+ Add your own solution</span></div>'
+    +'<div class="route" id="customPanel"><div class="rh">Add your own solution</div>'
+    +'<div class="impact">Not one of our suggestions? Type your own action, assign it to someone, choose how we\'ll check it, and set where it stands.</div>'
+    +'<div class="route-line col"><label>Your action</label><textarea id="cSol" rows="2" placeholder="e.g. Move these 8 Walmart products to weekly restocking"></textarea></div>'
+    +'<div class="route-line"><label>Assign to</label><select class="csel" id="cOwner">'+Object.keys(ops).map(function(k){return '<option value="'+k+'"'+(k===p.owner?' selected':'')+'>'+ops[k].name+(ops[k].role&&ops[k].role!=="—"?" · "+ops[k].role:"")+'</option>';}).join("")+'</select></div>'
+    +'<div class="route-line col"><label>How will we check it?</label><div class="cseg">'
+    +'<div class="csopt g sel" id="cs-gold" onclick="setCTier(\'gold\')"><div class="cst">&#10003; Checked by data</div><div class="csd">we confirm it for you</div></div>'
+    +'<div class="csopt s" id="cs-silver" onclick="setCTier(\'silver\')"><div class="cst">&#9670; Proof attached</div><div class="csd">you attach proof</div></div>'
+    +'<div class="csopt b" id="cs-bronze" onclick="setCTier(\'bronze\')"><div class="cst">&#9678; You confirm it</div><div class="csd">we can\'t track it</div></div>'
+    +'</div></div>'
+    +'<div class="route-line" id="cEvLine" style="display:none;"><label>Proof</label><span class="ev-attach" id="cEvBtn" onclick="attachCustomEvidence()">&#128206; Attach screenshot / order</span></div>'
+    +'<div class="route-line"><label>Stage</label><select class="csel" id="cStage"><option value="inprogress">In progress</option><option value="verifying">Checking your data</option><option value="verified">Done / closed</option><option value="watching">Watching</option></select></div>'
+    +'<div class="route-line"><label>Impact</label><input class="cinput" id="cImpact" placeholder="$ e.g. 1800000"><span style="font-size:12.5px;color:var(--faint);margin-left:8px;">optional</span></div>'
+    +'<div class="route-btns"><button class="btn-cancel" onclick="toggleCustom()">Cancel</button><button class="btn-route" onclick="addCustom()">Add to tracking</button></div></div>'
+    +'<div class="route" id="route"><div class="rh" id="routeTitle"></div><div class="impact" id="routeImpact"></div>'
+    +'<div class="route-line"><label>Tag</label><span class="tagbox"><span class="cat '+p.module+'">'+catLabel[p.module]+'</span> tracked</span></div>'
+    +'<div class="route-line"><label>Verification</label><span class="tagbox" id="routeTier"></span></div>'
+    +'<div class="route-line" id="evLine" style="display:none;"><label>Evidence</label><span class="ev-attach" id="evBtn" onclick="attachEvidence()">&#128206; Attach screenshot / PO</span></div>'
+    +'<div class="route-line" style="align-items:flex-start;"><label style="padding-top:9px;">Decision</label><textarea id="routeNote" rows="2"></textarea></div>'
+    +'<button class="btn-route" onclick="doApprove()">Approve</button></div>'
+    +'<div class="handoff" id="handoff"><div class="hi" id="hoIcon">&#10003;</div><h3 id="hoTitle"></h3><p id="hoBody"></p>'
+    +'<div class="hbtns"><button class="btn btn-primary" onclick="go(\'brief\')">Back to brief</button><button class="btn btn-ghost" onclick="go(\'tracking\')">View in Tracking</button></div></div>';
+    document.getElementById("decArea").innerHTML=h;
+  }
+  window.selectLever=function(id){ var p=probs.filter(function(x){return x.id===drillId;})[0];
+    if(chosenLever && chosenLever.id===id){ /* click selected again → deselect */
+      chosenLever=null; evidenceAttached=false;
+      var ds=document.querySelectorAll("#levers .lever"); for(var k=0;k<ds.length;k++) ds[k].className="lever";
+      document.getElementById("route").className="route"; clearPulse(); return;
+    }
+    chosenLever=p.levers.filter(function(l){return l.id===id;})[0]; evidenceAttached=false;
+    var ns=document.querySelectorAll("#levers .lever"); for(var i=0;i<ns.length;i++) ns[i].className="lever"+(ns[i].getAttribute("data-id")===id?" sel":"");
+    document.getElementById("routeTitle").textContent=chosenLever.t;
+    document.getElementById("routeImpact").innerHTML=chosenLever.impact_txt;
+    var tm=tierMeta[chosenLever.tier];
+    document.getElementById("routeTier").innerHTML='<span class="vbadge '+tm.badge+'">'+tm.icon+' '+tm.label+'</span>';
+    document.getElementById("evLine").style.display = chosenLever.tier==="silver" ? "flex" : "none";
+    document.getElementById("routeNote").value=chosenLever.action;
+    document.getElementById("route").className="route show"; pulse(".btn-route"); safeScroll(document.getElementById("route"));
+  };
+  window.attachEvidence=function(){ evidenceAttached=true; var b=document.getElementById("evBtn"); b.innerHTML="&#10003; PO-2026-014.pdf attached"; b.style.borderStyle="solid"; b.style.background="var(--silver-bg)"; };
+  window.toggleCustom=function(){ var c=document.getElementById("customPanel"); var open=c.className.indexOf("show")>=0;
+    if(open){ c.className="route"; } else { document.getElementById("route").className="route"; var ns=document.querySelectorAll("#levers .lever"); for(var i=0;i<ns.length;i++) ns[i].className="lever"; chosenLever=null; window._cTier="gold"; window._cAttached=false; c.className="route show"; setCTier("gold"); safeScroll(c); } };
+  window.setCTier=function(t){ window._cTier=t; ["gold","silver","bronze"].forEach(function(x){ var e=document.getElementById("cs-"+x); if(e) e.className="csopt "+(x==="gold"?"g":x==="silver"?"s":"b")+(x===t?" sel":""); });
+    var ev=document.getElementById("cEvLine"); if(ev) ev.style.display=(t==="silver")?"flex":"none";
+    var stg=document.getElementById("cStage"); if(stg&&t==="bronze") stg.value="watching"; };
+  window.attachCustomEvidence=function(){ window._cAttached=true; var b=document.getElementById("cEvBtn"); b.innerHTML="&#10003; evidence.pdf attached"; b.style.borderStyle="solid"; b.style.background="var(--silver-bg)"; };
+  window.addCustom=function(){
+    var p=probs.filter(function(x){return x.id===drillId;})[0];
+    var sol=(document.getElementById("cSol").value||"").trim()||"Custom action";
+    var owner=document.getElementById("cOwner").value;
+    var tier=window._cTier||"gold";
+    var stage=document.getElementById("cStage").value;
+    var impRaw=(document.getElementById("cImpact").value||"").replace(/[^0-9]/g,"");
+    var impact=impRaw?parseInt(impRaw,10):0;
+    if(tier==="bronze") stage="watching";
+    var sstage=stage; if(tier==="silver"&&stage==="verified") sstage="evidence";
+    var doneStage=(sstage==="verified"||sstage==="evidence");
+    var add=(doneStage&&tier!=="bronze"&&impact>0)?impact:0;
+    if(add){ todayImpact+=add; qtrImpact+=add; fsImpact+=add; }
+    seeded.unshift({id:"custom_"+Date.now(),module:p.module,owner:owner,title:p.title,action:sol,tier:tier,stage:sstage,impact:impact,amt:(impact>0?"$"+fmtL(impact):p.amt)});
+    p.status="handled"; p.custom={action:sol,owner:owner,tier:tier,stage:stage};
+    document.getElementById("customPanel").className="route";
+    var lv=document.getElementById("levers"); if(lv) lv.style.display="none";
+    var ar=document.getElementById("addrow"); if(ar) ar.style.display="none";
+    var rt=document.getElementById("route"); if(rt) rt.className="route";
+    var tm=tierMeta[tier]; var o=ops[owner]||{name:"Unassigned"};
+    var ic=document.getElementById("hoIcon"); ic.innerHTML=tm.icon; ic.style.background=(tier==="gold"?"var(--gold)":tier==="silver"?"var(--silver)":"var(--bronze)");
+    document.getElementById("hoTitle").innerHTML="Added to tracking";
+    var stageLabel={inprogress:"In progress",verifying:"Checking your data",verified:"Done",evidence:"Done (proof attached)",watching:"Watching · you confirm"}[sstage]||sstage;
+    document.getElementById("hoBody").innerHTML='<b>'+sol+'</b> &mdash; given to <b>'+o.name+'</b>, '+tm.label.toLowerCase()+', stage <b>'+stageLabel+'</b>.'+(add?' Your savings went up <b>$'+fmtL(add)+'</b>.':' No number added until your data confirms it.');
+    document.getElementById("handoff").className="handoff show"; pulse("#handoff .btn-primary"); safeScroll(document.getElementById("handoff"));
+  };
+  window.doApprove=function(){
+    var p=probs.filter(function(x){return x.id===drillId;})[0]; p.chosen=chosenLever.id;
+    var verifies=chosenLever.tier!=="bronze"; p.status=verifies?"verified":"watching";
+    var add = verifies&&chosenLever.impact>0 ? chosenLever.impact : 0;
+    if(add){ todayImpact+=add; qtrImpact+=add; fsImpact+=add; }
+    document.getElementById("route").className="route"; document.getElementById("levers").style.display="none";
+    var tm=tierMeta[chosenLever.tier]; var ic=document.getElementById("hoIcon");
+    ic.innerHTML=tm.icon; ic.style.background = chosenLever.tier==="gold"?"var(--gold)":chosenLever.tier==="silver"?"var(--silver)":"var(--bronze)";
+    document.getElementById("hoTitle").innerHTML = verifies?"Done &amp; "+(chosenLever.tier==="silver"?"proof attached":"checked"):"Done &amp; watching";
+    document.getElementById("hoBody").innerHTML='<b>'+chosenLever.t+'</b> &mdash; filed under '+catLabel[p.module]+', '+tm.label.toLowerCase()+'. '
+      + (add? 'Your savings just went up <b>$'+fmtL(add)+'</b>.' : 'Tracked honestly &mdash; no number added until your data confirms it.');
+    document.getElementById("handoff").className="handoff show"; pulse("#handoff .btn-primary");
+    setGuide(3,"Decided & verified by its tier. <b>Back to brief</b> to watch impact move, or <b>Tracking</b> to see ownership & stage.");
+    safeScroll(document.getElementById("handoff"));
+  };
+
+  /* ===== HELIX AI CHAT (ask-the-AI on a decision) ===== */
+  var helixQA={
+    blinkit:[
+      {q:"Why are these products losing money?",a:"On Walmart, the cost to make and ship them plus platform fees, returns, and ad spend adds up to more than you get paid on these 8 products — so <b>each sale loses money</b>. The main reason is Walmart's high fees, made worse by ad spend on products that already lose money. The −$5.78M a month is our number; I just explain it."},
+      {q:"Which option do you suggest?",a:"For a quick, safe move: <b>Stop the ads</b> — it stops about $1.8M a month in losses within a day and you can undo it. For a full fix, <b>Remove from Walmart</b> cuts the whole $5.78M a month but you lose Walmart sales. <b>Renegotiate the deal</b> has the biggest upside but it's slow and you'd confirm it yourself."},
+      {q:"What happens if I remove them?",a:"You stop the whole loss right away, but you give up Walmart sales on these products. If they're important sellers, think about raising prices on the 6 where buyers won't mind, and only removing the ones that always lose money."}
+    ],
+    adbudget:[
+      {q:"Where exactly is the money wasted?",a:"<b>42 products</b> in the Baby Clothing Set have ad spend but almost no sales from it — $28K a month wasted. Meanwhile your best performers (Girl's Vest earns 6.7x on ad spend) have hit their budget limit, so you're leaving profit on the table."},
+      {q:"What does 'Let AI rebalance the budget' do?",a:"It moves ad money from what isn't working to what is: stop the wasted spend and put it behind your best performers. Result: <b>$430K a month more profit</b>, with overall returns holding at 4.9x — all confirmable from your sales data."},
+      {q:"Is it safe to stop ads on 42 products?",a:"Yes — they've had no sales in 30 days, so stopping the ads saves money and costs you no sales. Your data confirms it automatically: we re-check spend and sales next cycle."}
+    ],
+    aged:[
+      {q:"Why is $4.2M stuck?",a:"These products have more stock than they're selling (48 days' worth sitting), so your cash is tied up in stock that isn't moving — $2.6M in slow sellers, $800K in stock not selling at all. That's cash you can't use for anything else."},
+      {q:"Should I approve the restock?",a:"The $3.8M Black Friday restock protects about $12M in sales and is within your safe spending range. It closes once the order is on file, and your data confirms it once the sales come in."},
+      {q:"Restock or sell off the slow stock first?",a:"You can do both. Selling off slow and unsold stock gets $3.4M back (at a lower profit) and cuts the days-sitting from 48 to 31; the restock keeps you covered for Black Friday. Many finance teams do both: clear the dead stock and approve a right-sized restock."}
+    ]
+  };
+  var helixGeneric="Here's how I see it: we work out every rupee figure and spot the problem — I just help you compare your options. Weigh <b>how fast and how easy to undo</b> against <b>the total gain</b>: options your data can confirm close on their own, while ones you confirm yourself sit under Watching until you mark them done. Want me to compare two options for you?";
+  function hxAdd(cls,html){ var m=document.getElementById("hxMsgs"); var d=document.createElement("div"); d.className="hx-msg "+cls; d.innerHTML=html; m.appendChild(d); m.scrollTop=m.scrollHeight; return d; }
+  function hxAnswer(text){ var m=document.getElementById("hxMsgs"); var t=document.createElement("div"); t.className="hx-typing"; t.innerHTML="<span></span><span></span><span></span>"; m.appendChild(t); m.scrollTop=m.scrollHeight;
+    setTimeout(function(){ t.remove(); hxAdd("ai",text); },650); }
+  var hxLever=null;
+  function recommendAns(p){ var set=helixQA[p.id]; if(set){ for(var i=0;i<set.length;i++){ if(/recommend/.test(set[i].q.toLowerCase())) return set[i].a; } } return helixGeneric; }
+  function hxResolve(qtext){
+    var lo=qtext.toLowerCase();
+    var p=(drillId && (current==="drill"||current==="dashboard"))?probs.filter(function(x){return x.id===drillId;})[0]:null;
+    if(hxLever){ var lv=hxLever, o=ops[lv.owner]||{name:lv.owner,role:""};
+      var tierTxt={gold:"your data confirms it automatically",silver:"you attach the proof",bronze:"you confirm it yourself — we can't track this one"}[lv.tier];
+      if(/(risk|downside|undo|revers|safe|danger)/.test(lo)) return "<b>"+lv.t+"</b> is <b>"+lv.speed+"</b>. "+lv.impact_txt+" Verification: "+tierTxt+".";
+      if(/(compare|other|instead|differ|versus| vs|alternativ)/.test(lo)) return (p?recommendAns(p):helixGeneric);
+      if(/(why|recommend|verif|how|owner|who|impact|tell|this|option)/.test(lo)) return "<b>"+lv.t+"</b> — "+lv.impact_txt+" Owner: <b>"+o.name+"</b>"+(o.role?" ("+o.role+")":"")+". On approval: "+lv.verS;
+    }
+    var set=p?helixQA[p.id]:null;
+    if(set){ for(var i=0;i<set.length;i++){ var kws=set[i].q.toLowerCase().replace(/[^a-z ]/g," ").split(" ").filter(function(w){return w.length>4;}); if(kws.some(function(w){return lo.indexOf(w)>=0;})) return set[i].a; } }
+    return helixGeneric;
+  }
+  window.openHelix=function(leverId){
+    var p=(drillId && (current==="drill"||current==="dashboard"))?probs.filter(function(x){return x.id===drillId;})[0]:null;
+    hxLever=(p&&leverId)?(p.levers.filter(function(l){return l.id===leverId;})[0]||null):null;
+    var lv=hxLever;
+    document.getElementById("hxCtx").innerHTML='Context: <b>'+(p?p.title:"The Money Brief")+'</b>'+(lv?' · option: '+lv.t:(p?' · '+p.amt+' '+p.period:''));
+    document.getElementById("hxMsgs").innerHTML="";
+    var intro = lv ? "You're looking at <b>"+lv.t+"</b> — "+lv.impact_txt+" Ask me why we suggest it, its risk, or how it compares to the other options."
+                   : p ? "I can explain any number on this decision or compare your options. The <b>"+p.amt+"</b> figure is ours to work out — I just explain it. What would you like to know?"
+                   : "Ask me about any decision in your list — I'll explain the numbers and the trade-offs.";
+    hxAdd("ai",intro);
+    var sugs = lv ? ["Why this option?","What's the risk?","Compare to the others"]
+                  : (p&&helixQA[p.id]?helixQA[p.id].map(function(x){return x.q;}):["Why is this at the top?","How do you check it worked?"]);
+    document.getElementById("hxSugs").innerHTML=sugs.map(function(q){return '<span class="hx-sug" onclick="askHelix(this.textContent)">'+q+'</span>';}).join("");
+    document.getElementById("helixScrim").classList.add("show");
+    document.getElementById("helixDrawer").classList.add("show");
+    setTimeout(function(){var i=document.getElementById("hxInput"); if(i)i.focus();},320);
+  };
+  window.closeHelix=function(){ hxLever=null; document.getElementById("helixScrim").classList.remove("show"); document.getElementById("helixDrawer").classList.remove("show"); };
+  window.askHelix=function(q){ q=(q||"").trim(); if(!q)return; hxAdd("me",q); document.getElementById("hxSugs").innerHTML=""; hxAnswer(hxResolve(q)); };
+  window.sendHelix=function(){ var i=document.getElementById("hxInput"); var v=(i.value||"").trim(); if(!v)return; i.value=""; window.askHelix(v); };
+
+  /* ===== DASHBOARD (deep analyst view) ===== */
+  var dashCtx={
+    blinkit:{channel:"Walmart",period:"This month",group:"SKU",skuset:"8 loss-making SKUs",lineage:["Brief signal: Walmart hero SKUs underwater","Lens P-01 · contribution(sku,channel) < 0","cost_master · fee_ledger · ad_spend · settlement_value","8 SKU×channel rows below cost"]},
+    adbudget:{channel:"Amazon",period:"Last 30 days",group:"Campaign",skuset:"42 zero-order + 3 winners",lineage:["Brief signal: Ad budget leaking, winners starved","Lens AD-01 / AD-02 · spend>floor & orders≈0 ; ROAS>target & capped","ad_spend · orders(attributed) · budget_caps","45 campaign rows flagged"]},
+    aged:{channel:"All warehouses",period:"Current",group:"SKU",skuset:"slow + dead + excess",lineage:["Brief signal: Working capital locked","Lens INV-01 / INV-03 · DOI>band ; units_sold≈0","stock_on_hand · sales_velocity · cogs","4 SKU×warehouse rows"]}
+  };
+  function renderDashboard(focusId){
+    setGuide(4,"This is the deep <b>Analyst Dashboard</b> — raw lines, every figure traceable. Where the digging happens; the brief stays the glance.");
+    var p = focusId ? probs.filter(function(x){return x.id===focusId;})[0] : probs[0];
+    var d=p.dash; var ctx=dashCtx[p.id]||{channel:"All channels",period:"This month",group:"SKU",skuset:"",lineage:[]};
+    var camefrom = focusId ? '<span class="back" onclick="openProblem(\''+p.id+'\')">&larr; Back to the decision</span>' : '<span class="back" onclick="go(\'brief\')">&larr; Back to brief</span>';
+    var h='<div class="wrap">'+camefrom
+    +'<div class="dash-banner"><div class="di">&#9683;</div><div>You’re in the <b>full analyst view</b>'+(focusId?' for “'+p.title+'”, <b>pre-filtered from the brief</b>':'')+'. This is the existing <b>Helix</b> depth &mdash; SKU lines, filters, custom rules, exports. The brief sits on top; the CFO rarely comes here.</div></div>'
+    +'<div class="toolbar"><span class="chip on">'+modName[p.module]+'</span><span class="chip on">'+ctx.channel+'</span><span class="chip on">'+ctx.period+'</span><span class="chip">Group: '+ctx.group+' &#9662;</span><span class="chip">+ Custom rule</span><span class="chip" style="margin-left:auto;">Export CSV</span></div>'
+    +(focusId?'<div class="lineage"><div class="ln-h">&#128279; Traced to source</div><div class="ln-path">'+ctx.lineage.map(function(s,i){return '<span class="ln-step'+(i===ctx.lineage.length-1?' last':'')+'">'+s+'</span>';}).join('<span class="ln-arr">&rarr;</span>')+'</div></div>':'')
+    +'<table class="dt"><thead><tr>'+d.cols.map(function(c,i){return '<th'+(i>1?' class="r"':'')+'>'+c+'</th>';}).join("")+'</tr></thead><tbody>'
+    +d.rows.map(function(r){return '<tr>'+r.map(function(cell,i){var cls=i>1?' class="num r'+(String(cell).indexOf("-")===0?" neg":(String(cell).indexOf("+")===0?" pos":""))+'"':''; var val=(d.cols[i]==="Channel")?('<span class="chcell">'+chIcon(cell)+'<span>'+cell+'</span></span>'):cell; return '<td'+cls+'>'+val+'</td>';}).join("")+'</tr>';}).join("")
+    +'</tbody></table>'
+    +'<p class="floor-note">Every number comes from your real data &middot; sort, filter, group, and build your own rules &middot; 1,700+ ready-made reports &middot; build a report just by asking. Clicking a decision brings your analyst straight here, already filtered to it.</p></div>';
+    document.getElementById("content").innerHTML=h;
+  }
+
+  /* ===== TRACKING ===== */
+  function renderTracking(){
+    setGuide(5,"The CFO oversight view: <b>who owns each decision</b> and <b>which of the three verifications</b> it’s in. Honour-based items are clearly flagged as outside our tracking.");
+    var rows=[];
+    probs.forEach(function(p){
+      if(p.status==="dismissed"||p.status==="deleted"){ return; }
+      if(p.status==="open"){ rows.push({id:p.id,title:p.title,module:p.module,owner:p.owner,tier:null,stage:"open",impact:p.amt}); }
+      else if(p.status==="handled"){ return; }
+      else { var lv=leverObj(p); rows.push({id:p.id,title:p.title,module:p.module,owner:lv.owner,tier:lv.tier,stage:(p.status==="watching"?"watch":(lv.tier==="silver"?"evidence":"verified")),impact:lv.impact?"$"+fmtL(lv.impact):p.amt}); }
+    });
+    var _stMap={verifying:"verify",evidence:"evidence",watching:"watch",inprogress:"inprogress",verified:"verified"};
+    seeded.forEach(function(s){ rows.push({id:s.id,title:s.title,module:s.module,owner:s.owner,tier:s.tier,stage:_stMap[s.stage]||"verified",impact:s.amt}); });
+    var stageChip={open:'<span class="stagechip stage-open">needs a decision</span>',verify:'<span class="stagechip stage-verify"><span class="spin">&#8635;</span> checking your data</span>',verified:'<span class="stagechip stage-done">&#10003; checked by data</span>',evidence:'<span class="stagechip stage-evid">&#9670; proof attached</span>',watch:'<span class="stagechip stage-watch">&#9678; you confirm · watching</span>',inprogress:'<span class="stagechip stage-prog">&#9679; in progress</span>'};
+    var h='<div class="wrap">'
+    +'<div class="legend"><span class="li"><span class="vbadge gold">&#10003;</span> checked by your data</span><span class="li"><span class="vbadge silver">&#9670;</span> proof you attach</span><span class="li"><span class="vbadge bronze">&#9678;</span> you confirm — we can\'t track it</span><span class="team-link" onclick="go(\'team\')">&#9783; Team performance &rarr;</span></div>'
+    +'<table class="dt"><thead><tr><th>Decision</th><th>Category</th><th>Owner</th><th>Verification stage</th><th class="r">Impact</th></tr></thead><tbody>'
+    +rows.map(function(r){ var o=ops[r.owner];
+      return '<tr class="dt-row" onclick="openItem(\''+r.id+'\',\'tracking\')"><td style="font-weight:500;color:var(--accent-2);">'+r.title+'</td><td><span class="cat '+r.module+'">'+catLabel[r.module]+'</span></td>'
+      +'<td><span class="ow clickable" onclick="event.stopPropagation();openPerson(\''+r.owner+'\')" title="View '+o.name+'’s items"><span class="av" style="background:'+o.col+'">'+o.av+'</span><span><div style="font-size:12.5px;">'+o.name+'</div><div style="font-size:10.5px;color:var(--muted);">'+o.role+'</div></span></span></td>'
+      +'<td>'+stageChip[r.stage]+'</td><td class="num r">'+r.impact+'</td></tr>';
+    }).join("")+'</tbody></table>'
+    +'<p class="floor-note">The list is a quick daily glance; this is the full record behind it. People pick up what\'s theirs by area &mdash; nothing has to be assigned by hand.</p></div>';
+    document.getElementById("content").innerHTML=h;
+  }
+
+  /* ===== RESOLVED / IN-MOTION DEEP VIEW ===== */
+  var _resolvedFrom="brief";
+  window.openItem=function(id,from){ if(probs.some(function(p){return p.id===id;})){ openProblem(id); } else { openResolved(id,from); } };
+  window.openResolved=function(id,from){ var s=seeded.filter(function(x){return x.id===id;})[0]; if(!s)return;
+    _resolvedFrom=from||(current==="brief"?"brief":current==="person"?"person":"tracking"); current="resolved";
+    var navId=_resolvedFrom==="brief"?"brief":_resolvedFrom==="team"?"team":"tracking"; setNav(navId);
+    setHeader(issueMap[s.id]||s.title,(_resolvedFrom==="brief"?"The Brief":"Tracking")+" › "+catLabel[s.module]);
+    swap(function(){renderResolvedDetail(s);}); };
+  function renderResolvedDetail(s){
+    var tm=tierMeta[s.tier]; var o=ops[s.owner]||{name:s.owner,role:"",col:"#9AA0A5",av:"?"};
+    var isMotion=(s.stage==="verifying"||s.stage==="inprogress");
+    var backTarget=_resolvedFrom==="brief"?"brief":_resolvedFrom==="team"?"team":"tracking";
+    var backLbl=_resolvedFrom==="brief"?"the brief":_resolvedFrom==="team"?"team performance":"tracking";
+    var signed=(s.stage==="verified"||s.stage==="evidence")?"+":"";
+    var proofHtml=(s.proof||[]).map(function(r){var neg=String(r[1]).indexOf("-")===0;return '<div class="proof-row"><span>'+r[0]+'</span><span class="pv" style="color:'+(neg?"var(--leak)":"var(--ink-2)")+'">'+r[1]+'</span></div>';}).join("");
+    var h='<div class="wrap"><span class="back" onclick="go(\''+backTarget+'\')">&larr; Back to '+backLbl+'</span>'
+      +'<div class="dd-top"><div class="dd-head"><h2>'+(issueMap[s.id]||s.title)+'</h2><div class="dd-meta"><span class="cat '+s.module+'">'+catLabel[s.module]+'</span><span class="vbadge '+tm.badge+'">'+tm.icon+' '+tm.label+'</span> <span class="amt" style="color:'+(signed?"var(--gold)":"var(--ink)")+'">'+signed+s.amt+'</span></div></div></div>'
+      +'<div style="margin:2px 2px 18px;">'+itemTime((function(){var tp=[["Created",s.cAt||"—"]];if(s.aAt)tp.push(["Action taken",s.aAt]);if(s.rAt)tp.push([s.stage==="watching"?"Status":"Resolved",s.rAt]);return tp;})())+'</div>'
+      +'<div class="proof"><div class="ph"><span>What we did</span></div><div class="proof-row"><span style="font-weight:500;color:var(--ink);">'+s.action+'</span></div></div>'
+      +(isMotion?'<div style="margin:0 2px 20px;">'+statusTrack(s.stage)+'</div>':'')
+      +'<div class="dec-h">Outcome</div><div class="dec-sub">'+(s.outcome||"")+'</div>'
+      +(proofHtml?'<div class="proof"><div class="ph"><span>The numbers</span></div>'+proofHtml+'</div>':'')
+      +'<div class="route-line" style="margin-top:16px;"><label>Handled by</label><span class="ow"><span class="av" style="background:'+o.col+'">'+o.av+'</span><span><div style="font-size:13px;font-weight:600;">'+o.name+'</div><div style="font-size:11px;color:var(--muted);">'+o.role+'</div></span></span></div>'
+      +'<p class="floor-note">'+(isMotion?'This is being checked against your data. Once it\'s confirmed, it moves to Resolved and adds to your savings.':'This decision is done and checked against your data &mdash; we never show a made-up number.')+'</p></div>';
+    document.getElementById("content").innerHTML=h;
+  }
+
+  /* ===== metrics + helpers ===== */
+  function updateTrackBadge(){ var b=document.getElementById("trackBadge"); if(b){ var n=probs.filter(function(p){return p.status==="open";}).length + seeded.filter(function(s){return s.stage==="verifying"||s.stage==="inprogress"||s.stage==="watching";}).length; b.textContent=n; } }
+  function refreshMetrics(){ setMetric("mToday",todayImpact); setMetric("mQtr",qtrImpact); setMetric("mFs",fsImpact);
+    var sub=document.getElementById("mTodaySub"); if(sub) sub.textContent = todayImpact>0?"verified today":"acted on today"; }
+  function setGuide(s,t){ /* light: guide carried via coach + inline */ }
+  function clearPulse(){ var ns=document.querySelectorAll(".coach-pulse"); for(var i=0;i<ns.length;i++) ns[i].classList.remove("coach-pulse"); }
+  function pulse(sel){ clearPulse(); var el=document.querySelector(sel); if(el) el.classList.add("coach-pulse"); }
+  window.closeCoach=function(){ var c=document.getElementById("coach"); if(c) c.style.display="none"; pulse(".prob"); };
+  function safeScroll(el){ try{ if(el&&el.scrollIntoView) el.scrollIntoView({behavior:"smooth",block:"nearest"}); }catch(e){} }
+
+  // animate metrics on return to brief after action
+  var pend=null; var _go=window.go;
+  window.go=function(v){ if(v==="brief" && current!=="brief"){ pend={t:todayImpact,q:qtrImpact,f:fsImpact}; } _go(v);
+    if(v==="brief" && pend){ var pp=pend; pend=null;
+      setTimeout(function(){ animateNum(document.getElementById("mToday"),0,pp.t,800); var qel=document.getElementById("mQtr"); animateNum(qel, pp.q-(pp.t), pp.q,800); var fel=document.getElementById("mFs"); animateNum(fel, pp.f-(pp.t), pp.f,800); },210); } };
+
+  /* ===== CFO PER-PERSON DRILL-DOWN ===== */
+  function personTickets(ownerId){
+    var open=[],closed=[];
+    probs.forEach(function(p){
+      if(p.owner!==ownerId && !(p.status!=="open" && leverObj(p) && leverObj(p).owner===ownerId)) return;
+      if(p.status==="open"){ open.push({id:p.id,title:p.title,module:p.module,stage:"open",age:ageFor(p.id),impact:p.amt}); }
+    });
+    probs.forEach(function(p){ if(p.status!=="open" && p.status!=="handled"){ var lv=leverObj(p); if(lv&&lv.owner===ownerId){ var stg=(p.status==="watching"?"watch":(lv.tier==="silver"?"evidence":"verifying")); (stg==="verifying"||stg==="watch"?open:closed).push({id:p.id,title:p.title,module:p.module,stage:stg,age:ageFor(p.id),impact:lv.impact?"$"+fmtL(lv.impact):p.amt}); } } });
+    seeded.forEach(function(s){ if(s.owner!==ownerId)return; var st=s.stage; var isOpen=(st==="verifying"||st==="inprogress"||st==="watching"); (isOpen?open:closed).push({id:s.id,title:s.title,module:s.module,stage:({verifying:"verifying",verified:"verified",evidence:"evidence",inprogress:"inprogress",watching:"watch"})[st]||"verified",age:ageFor(s.id),impact:(isOpen?"":"+")+s.amt}); });
+    return {open:open,closed:closed};
+  }
+  var _ages={blinkit:"1d",adbudget:"3d",aged:"9d",recon:"2d",returns:"—",fee_hist:"—",
+    tds:"2d",latefee:"—",dupfee:"4d",amz_reprice:"—",return_size:"5d",cod:"—",promo:"—",
+    meta_scale:"1d",acos:"—",channel_shift:"3d",deadstock:"—",transfer:"—",restock_hero:"—",fee_nego:"12d"};
+  function ageFor(id){ return _ages[id]||"2d"; }
+  var stageChipP={open:'<span class="stagechip stage-open">to decide</span>',verifying:'<span class="stagechip stage-verify"><span class="spin">&#8635;</span> checking</span>',verified:'<span class="stagechip stage-done">&#10003; checked</span>',evidence:'<span class="stagechip stage-evid">&#9670; proof</span>',watch:'<span class="stagechip stage-watch">&#9678; watching</span>',inprogress:'<span class="stagechip stage-prog">&#9679; in progress</span>'};
+  var _personFrom="tracking";
+  window.openPerson=function(ownerId,from){ _personFrom=from||"tracking"; current="person"; setNav(_personFrom==="team"?"team":"tracking"); var o=ops[ownerId]; setHeader(_personFrom==="team"?"Team performance":"Tracking",(_personFrom==="team"?"Team performance":"Tracking")+" › "+o.name); swap(function(){renderPerson(ownerId);}); };
+  function renderPerson(ownerId){
+    var o=ops[ownerId]; var t=personTickets(ownerId);
+    var totalVerified=t.closed.reduce(function(a,r){var m=String(r.impact).match(/([\d.]+)L/);return a+(m?parseFloat(m[1]):0);},0);
+    var oldest=t.open.reduce(function(a,r){var d=parseInt(r.age);return isNaN(d)?a:Math.max(a,d);},0);
+    function row(r){ var stale=(parseInt(r.age)>=7); return '<div class="ptrow clickable" onclick="openItem(\''+r.id+'\',\'person\')"><div><div class="pt-t">'+r.title+'</div><span class="cat '+r.module+'">'+catLabel[r.module]+'</span></div>'+stageChipP[r.stage]+'<span class="pt-age'+(stale?' stale':'')+'">'+r.age+'</span><span class="pt-imp num">'+r.impact+'</span></div>'; }
+    var backTarget=_personFrom==="team"?"team":"tracking"; var backLbl=_personFrom==="team"?"team performance":"tracking";
+    var openHtml=t.open.length?t.open.map(row).join(""):'<div class="brief-empty">Nothing open &mdash; all clear.</div>';
+    var closedHtml=t.closed.length?t.closed.map(row).join(""):'<div class="brief-empty">Nothing closed this quarter yet.</div>';
+    var h='<div class="wrap"><span class="back" onclick="go(\''+backTarget+'\')">&larr; Back to '+backLbl+'</span>'
+    +'<div class="person-head"><span class="av" style="width:46px;height:46px;background:'+o.col+';font-size:16px;">'+o.av+'</span><div><div class="ph-nm gk">'+o.name+'</div><div class="ph-rl">'+o.role+' &middot; work assigned</div></div></div>'
+    +'<div class="psumm"><div class="pscell"><div class="psv" style="color:var(--leak);">'+t.open.length+'</div><div class="psk">open</div></div><div class="pscell"><div class="psv" style="color:var(--gold);">'+t.closed.length+'</div><div class="psk">closed (qtr)</div></div><div class="pscell"><div class="psv">$'+(totalVerified?totalVerified.toFixed(1)+"L":"—")+'</div><div class="psk">money saved</div></div><div class="pscell"><div class="psv" style="color:'+(oldest>=7?'var(--leak)':'var(--ink)')+';">'+(oldest?oldest+"d":"—")+'</div><div class="psk">oldest open</div></div></div>'
+    +'<div class="modtabs"><div class="modtab" id="ptab-open" onclick="personTab(\'open\')">Open<span class="ct">'+t.open.length+'</span></div><div class="modtab" id="ptab-closed" onclick="personTab(\'closed\')">Closed<span class="ct">'+t.closed.length+'</span></div></div>'
+    +'<div class="brief-tab" id="pt-open">'+openHtml+'</div>'
+    +'<div class="brief-tab" id="pt-closed">'+closedHtml+'</div>'
+    +'<p class="floor-note">Click any person in Tracking or Team performance to land here. <b>How long something\'s been open tells you a lot</b> &mdash; an old open item means work has stalled. It\'s just a filter, no new data; even <b>Unassigned</b> is someone you can open to see what still needs handing out.</p></div>';
+    document.getElementById("content").innerHTML=h;
+    personTab(window._personTab||"open");
+  }
+  window.personTab=function(t){ window._personTab=t;
+    ["open","closed"].forEach(function(n){ var pane=document.getElementById("pt-"+n); if(pane) pane.classList.toggle("on",n===t); var tab=document.getElementById("ptab-"+n); if(tab) tab.classList.toggle("active",n===t); });
+  };
+
+  /* ===== TEAM PERFORMANCE (CFO roll-up across everyone) ===== */
+  function ownerStats(id){
+    var t=personTickets(id);
+    var verified=t.closed.reduce(function(a,r){var m=String(r.impact).match(/([\d.]+)L/);return a+(m?parseFloat(m[1]):0);},0);
+    var inflight=t.open.reduce(function(a,r){var m=String(r.impact).match(/([\d.]+)L/);return a+(m?parseFloat(m[1]):0);},0);
+    var oldest=t.open.reduce(function(a,r){var d=parseInt(r.age);return isNaN(d)?a:Math.max(a,d);},0);
+    return {open:t.open.length,closed:t.closed.length,verified:verified,inflight:inflight,oldest:oldest};
+  }
+  function renderTeam(){
+    var ids=["PN","AR","MI","RC"];
+    var un=ownerStats("UN"); if(un.open+un.closed>0) ids.push("UN");
+    var stats=ids.map(function(id){return {id:id,s:ownerStats(id)};});
+    var maxV=Math.max(1,Math.max.apply(null,stats.map(function(x){return x.s.verified;})));
+    stats.sort(function(a,b){return b.s.verified-a.s.verified;});
+    var teamOpen=stats.reduce(function(a,x){return a+x.s.open;},0);
+    var teamVer=stats.reduce(function(a,x){return a+x.s.verified;},0);
+    var teamStale=stats.reduce(function(a,x){return a+(x.s.oldest>=7?1:0);},0);
+    var h='<div class="wrap">'
+    +'<div class="psumm" style="margin-bottom:20px;"><div class="pscell"><div class="psv">'+stats.length+'</div><div class="psk">people active</div></div>'
+    +'<div class="pscell"><div class="psv" style="color:var(--leak);">'+teamOpen+'</div><div class="psk">open across team</div></div>'
+    +'<div class="pscell"><div class="psv" style="color:var(--gold);">$'+teamVer.toFixed(1)+'L</div><div class="psk">verified this quarter</div></div>'
+    +'<div class="pscell"><div class="psv" style="color:'+(teamStale?'var(--leak)':'var(--ink)')+';">'+teamStale+'</div><div class="psk">with stalled work</div></div></div>'
+    +'<div class="sec-lbl"><span>Everyone, by verified impact delivered</span><span class="r">tap a row to drill in</span></div>';
+    h+=stats.map(function(x){ var o=ops[x.id],s=x.s; var stale=s.oldest>=7;
+      var barW=Math.round(100*s.verified/maxV);
+      return '<div class="teamrow" onclick="openPerson(\''+x.id+'\',\'team\')">'
+        +'<span class="ow"><span class="av" style="background:'+o.col+'">'+o.av+'</span><span><div style="font-size:13.5px;font-weight:600;">'+o.name+'</div><div style="font-size:10.5px;color:var(--muted);">'+o.role+'</div></span></span>'
+        +'<div class="tm-bar-wrap"><div class="tm-bar" style="width:'+barW+'%;"></div><span class="tm-bar-v num">$'+(s.verified?s.verified.toFixed(1)+"L":"—")+'</span></div>'
+        +'<div class="tm-stat"><div class="tm-n" style="color:var(--leak);">'+s.open+'</div><div class="tm-k">open</div></div>'
+        +'<div class="tm-stat"><div class="tm-n" style="color:var(--gold);">'+s.closed+'</div><div class="tm-k">closed</div></div>'
+        +'<div class="tm-stat"><div class="tm-n" style="color:'+(stale?'var(--leak)':'var(--ink)')+';">'+(s.oldest?s.oldest+"d":"—")+'</div><div class="tm-k">oldest</div></div>'
+        +'<span class="tm-go">&rarr;</span></div>';
+    }).join("");
+    h+='<p class="floor-note">The same tracked decisions added up &mdash; no new data, no reports to write. Sorted by <b>money saved</b>; the <b>longest-open item</b> is your early warning that work has stalled. Click anyone for their full open and closed list.</p></div>';
+    document.getElementById("content").innerHTML=h;
+  }
+  window.openTeam=function(){ go("team"); };
+
+  /* ===== GUIDED TOUR ===== */
+  var TOUR=[
+    {view:"brief",sel:".metrics",t:"Your savings, in three numbers",b:"What we've saved you today, this quarter, and all-time. These go up as you act."},
+    {view:"brief",sel:".onething",t:"The one thing to do today",b:"Not a report to read — just the single biggest money decision, in one line."},
+    {view:"brief",sel:".prob",t:"Sorted by money at risk",b:"The 10–15 decisions worth your time, biggest first. We work out every number; the AI just explains it. Click one to decide."},
+    {view:"drill:blinkit",sel:".proof",t:"The proof, from your own data",b:"Every claim is backed by the actual numbers. The figure is ours to calculate — you can't edit it. The AI never makes one up."},
+    {view:"drill:blinkit",sel:".levers",t:"What you can do — and how we'll check it",b:"Each option shows how we'll confirm it worked, and who's handling it. You pick what to do; you never touch the math."},
+    {view:"drill:blinkit",sel:".addrow",t:"Or add your own action",b:"Type your own action, assign it to someone, choose how we'll check it, attach proof, and set where it stands. It's a to-do list for your money."},
+    {view:"dash:blinkit",sel:".lineage",t:"Open in Dashboard — the full detail",b:"One click takes your analyst to all the raw numbers for this problem, already filtered. Everything's there to dig in."},
+    {view:"tracking",sel:".dt",t:"Every decision, tracked",b:"Who's handling it, where it stands, and what it's worth — the full record behind the list. Items move along and close; problems that come back reopen on their own."},
+    {view:"team",sel:".psumm",t:"How the whole team is doing",b:"Everyone in one place, sorted by money saved — what's open, what's done, and warnings for work that's stalled. No manual reports; it's the same tracked decisions added up."},
+    {view:"person:MI",sel:".psumm",t:"Look at any one person",b:"Click anyone to see what they've got open and closed. How long it's been open is the signal — a 9-day-old open item means work has stalled."},
+    {view:"brief",sel:".metrics",t:"That's the full cycle",b:"Found → decided → tracked → checked → added to your savings. Simple, honest, and it adds up over time."}
+  ];
+  var tStep=0, tActive=false;
+  function tourNav(step,cb){
+    var v=step.view;
+    if(v.indexOf("drill:")===0){ openProblem(v.split(":")[1]); }
+    else if(v.indexOf("dash:")===0){ openDash(v.split(":")[1]); }
+    else if(v.indexOf("person:")===0){ openPerson(v.split(":")[1]); }
+    else if(current!==v){ go(v); }
+    setTimeout(cb,430);
+  }
+  function positionTour(){
+    var step=TOUR[tStep]; var el=document.querySelector(step.sel);
+    var hole=document.getElementById("tHole"), tip=document.getElementById("tTip");
+    if(!el){ hole.style.opacity=0; tip.style.left="50%"; tip.style.top="50%"; tip.style.transform="translate(-50%,-50%)";
+    } else {
+      try{ el.scrollIntoView({behavior:"smooth",block:"center"}); }catch(e){}
+      setTimeout(function(){
+        var r=el.getBoundingClientRect(); var pad=8;
+        hole.style.opacity=1; hole.style.transform="none";
+        hole.style.left=(r.left-pad)+"px"; hole.style.top=(r.top-pad)+"px";
+        hole.style.width=(r.width+pad*2)+"px"; hole.style.height=(r.height+pad*2)+"px";
+        var tipW=320, vw=window.innerWidth, vh=window.innerHeight;
+        var left=r.left; if(left+tipW>vw-20) left=vw-20-tipW; if(left<20)left=20;
+        var below=r.bottom+14, top;
+        if(below+200<vh){ top=below; } else { top=Math.max(20,r.top-200-14); }
+        tip.style.transform="none"; tip.style.left=left+"px"; tip.style.top=top+"px";
+      },300);
+    }
+    document.getElementById("tNum").textContent=(tStep+1)+" / "+TOUR.length;
+    document.getElementById("tTitle").innerHTML=step.t;
+    document.getElementById("tBody").innerHTML=step.b;
+    document.getElementById("tPrev").style.visibility=tStep===0?"hidden":"visible";
+    document.getElementById("tNext").textContent=tStep===TOUR.length-1?"Finish":"Next →";
+  }
+  function showStep(){ tourNav(TOUR[tStep],positionTour); }
+  window.startTour=function(){ tActive=true; tStep=0; document.getElementById("tour").style.display="block"; var c=document.getElementById("coach"); if(c)c.style.display="none"; showStep(); };
+  window.tourNext=function(){ if(tStep<TOUR.length-1){ tStep++; showStep(); } else { window.endTour(); } };
+  window.tourPrev=function(){ if(tStep>0){ tStep--; showStep(); } };
+  window.endTour=function(){ tActive=false; document.getElementById("tour").style.display="none"; go("brief"); };
+
+  // init
+  (function(){ var b=document.getElementById("trackBadge"); if(b){ var n=probs.filter(function(p){return p.status==="open";}).length + seeded.filter(function(s){return s.stage==="verifying"||s.stage==="inprogress"||s.stage==="watching";}).length; b.textContent=n; } })();
+  renderBrief();
+  setMetric("mToday",0);
+  animateNum(document.getElementById("mQtr"),0,qtrImpact,1100);
+  animateNum(document.getElementById("mFs"),0,fsImpact,1300);
+})();
+</script>
+
+<!-- ===== Bridge: let the ForceSight USA sidebar drive Money navigation ===== -->
+<script>
+(function(){
+  function nav(v){
+    if(!v) return;
+    if(v==="reports") v="brief"; // Reports maps to The Brief in this module
+    if(window.go) window.go(v);
+  }
+  // Initial view from URL hash (e.g. /money.html#tracking)
+  var h = (location.hash || "").replace("#","");
+  if(h && h!=="brief") nav(h);
+  // Live navigation from the parent React app
+  window.addEventListener("message", function(e){
+    if(e && e.data && e.data.type==="money-nav") nav(e.data.view);
+  });
+})();
+</script>
+</body>
+</html>
